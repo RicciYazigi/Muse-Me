@@ -30,30 +30,30 @@ def test_fuse_live_ab_connection_in_gate2():
             )
             assert res_a["readback_verified"] is True
 
-            # Mode B: Fuse enabled with normal risk (0.1) -> succeeds
+            # Mode B: Fuse enabled with normal risk (0.01) -> succeeds
             mid_b = mem.checkpoint("proj", "Generar entregable 2", {"doc.md": rev})
             prop_b = propose_deliverable(mem, mid_b, title="Reporte 2")
             sensor = TrajectorySensor(threshold=0.04)
             res_b = execute_deliverable_action(
                 mem, mid_b, target_dir=td, filename="out_b.md",
                 approved_draft_sha256=prop_b["draft_sha256"], user_approved=True,
-                fuse_sensor=sensor, risk_score=0.01
+                fuse_sensor=sensor, risk_score=0.01, fuse_t=1.0
             )
             assert res_b["readback_verified"] is True
 
-            # Mode C: Repeated extreme risk pulses trip the fuse
+            # Mode C: Excessive risk pulses trip the fuse
             mid_c = mem.checkpoint("proj", "Generar entregable 3", {"doc.md": rev})
             prop_c = propose_deliverable(mem, mid_c, title="Reporte 3")
-            # Force trip by feeding accumulated excessive risk
-            sensor.observe(0.95, effect="insert", t=time.time())
-            sensor.observe(0.95, effect="insert", t=time.time() + 1)
-            sensor.observe(0.95, effect="write", t=time.time() + 2)
+            # Feed progressive risk with strictly monotonic timestamps
+            sensor.observe(0.95, effect="insert", t=2.0)
+            sensor.observe(0.95, effect="insert", t=3.0)
+            sensor.observe(0.95, effect="write", t=4.0)
 
             with pytest.raises(PermissionError, match="Fusible Temporal"):
                 execute_deliverable_action(
                     mem, mid_c, target_dir=td, filename="out_c.md",
                     approved_draft_sha256=prop_c["draft_sha256"], user_approved=True,
-                    fuse_sensor=sensor, risk_score=0.99, fuse_path="session"
+                    fuse_sensor=sensor, risk_score=0.99, fuse_path="session", fuse_t=5.0
                 )
         finally:
             mem.close()

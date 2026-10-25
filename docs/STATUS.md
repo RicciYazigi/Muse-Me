@@ -52,3 +52,8 @@ MUSE (nombre público de producto: **Muse-Me**) es un entorno de asistencia cont
 - **Servidor MCP Gobernado (src/muse_env/mcp_server.py):** Expone las herramientas `get_context_package`, `propose_insertion` y `verify_state` para consumo directo de Muse Code, Claude Code y Cursor sobre stdio JSON-RPC 2.0.
 - **Context Compiler v2 (Vigencia y Exclusiones Motivadas):** Resuelve F3 descartando especificaciones obsoletas (`v1.0`) cuando existe una vigente autorizada (`v2.4`), declarando el motivo explícito de exclusión.
 - **Fusible de Contención Temporal (F07):** Conectado en Compuerta 2 (`execute_deliverable_action`) con interruptor A/B y métrica I²t evaluada en vivo.
+
+### Gesto de Escritorio y Contención Temporal Enriquecida (24-oct-2026):
+- **Suite de Pruebas:** 85 passed en Windows (72 passed, 13 skipped en Linux).
+- **Gesto de Producto ('Responder con Muse') (src/muse_env/gesture.py):** Permite disparar la asistencia contextual directamente sobre la ventana activa mediante CLI (`--trigger`), script PowerShell (`Start-MuseGesture.ps1`) o atajo. Garantiza que ventanas no autorizadas se bloqueen tajantemente antes de leer cualquier contenido.
+- **Modelo Multi-Tier de Contención Temporal (src/muse_env/gate.py):** Incorporado `GatePolicy` y `Verdict` (GO / DEGRADE / STOP) basado en la arquitectura de `fusegate-Meta Version`, evaluando estados térmicos acumulados por sesión.

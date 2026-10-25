@@ -286,7 +286,8 @@ def execute_deliverable_action(
     user_approved: bool = False,
     fuse_sensor: Optional[TrajectorySensor] = None,
     risk_score: float = 0.0,
-    fuse_path: str = "session"
+    fuse_path: str = "session",
+    fuse_t: Optional[float] = None
 ) -> Dict[str, Any]:
     """Capability B (Phase 2): Execute approved local file creation.
     - Enforces Gate 2 approval and non-duplication
@@ -295,7 +296,8 @@ def execute_deliverable_action(
     - Performs cryptographic readback verification
     """
     # F07: Temporal Fuse Gate 2
-    if fuse_sensor is not None and fuse_sensor.observe(risk_score, effect="write", t=time.time(), path=fuse_path):
+    t_now = fuse_t if fuse_t is not None else time.time()
+    if fuse_sensor is not None and fuse_sensor.observe(risk_score, effect="write", t=t_now, path=fuse_path):
         raise PermissionError("Compuerta 2 bloqueada por Fusible Temporal (I²t): riesgo acumulado excedió el umbral.")
 
     if not user_approved:

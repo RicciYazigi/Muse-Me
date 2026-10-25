@@ -1,9 +1,30 @@
 """Authorization is mandatory; an optional temporal sensor can only restrict."""
 from __future__ import annotations
+from dataclasses import dataclass
+import math
 from .context_builder import source_record
 from ._fusible_vendor import Fuse
 
 EFFECT_W = {"observe": 0.0, "read": 0.8, "write": 1.0, "insert": 1.2, "share": 1.5}
+RANK = {"GO": 0, "DEGRADE": 1, "STOP": 2}
+
+
+@dataclass(frozen=True)
+class GatePolicy:
+    """Multi-tier containment policy (adapted from FuseGate)."""
+    degrade_threshold: float = 0.04
+    stop_threshold: float = 0.08
+    theta: float = 0.60
+    tau: float = 50.0
+
+
+@dataclass(frozen=True)
+class Verdict:
+    action: str  # "GO" | "DEGRADE" | "STOP"
+    allowed: bool
+    state: float
+    effective_state: float
+    session: str
 
 
 def checkpoint(package, *, store, transfer_required):
@@ -33,9 +54,12 @@ def checkpoint(package, *, store, transfer_required):
 
 
 class TrajectorySensor:
-    """Experimental risk signals are supplied by the caller, never invented here."""
+    """Experimental risk signals are supplied by the caller, never invented here.
+    Preserves exact original stop behavior while adding rich multi-tier Verdict evaluation.
+    """
     def __init__(self, threshold=0.04):
         self.fuse = Fuse(statistic="i2t", threshold=threshold, theta=0.60, tau=50.0, reset_on_trip=False)
+        self.threshold = threshold
         self.enabled = True
         self._stopped = set()
 
@@ -48,6 +72,17 @@ class TrajectorySensor:
         if trip is not None:
             self._stopped.add(path)
         return trip is not None
+
+    def evaluate(self, *, score: float, t: float, effect: str, session: str = "session") -> Verdict:
+        """Evaluate structured Verdict (GO / DEGRADE / STOP) based on accumulated thermal state."""
+        if not self.enabled:
+            return Verdict("GO", True, 0.0, 0.0, session)
+        stopped = self.observe(score, effect, t, path=session)
+        state = self.fuse.value(session)
+        effective = state * EFFECT_W[effect]
+        action = "STOP" if stopped else ("DEGRADE" if effective > self.threshold else "GO")
+        allowed = not stopped
+        return Verdict(action, allowed, state, effective, session)
 
     def reset(self, path="session"):
         self._stopped.discard(path)
