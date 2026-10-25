@@ -96,6 +96,18 @@ class PanelHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"panel.html no encontrado")
             return
 
+        if path == "/api/projects":
+            res = self.engine.get_projects_overview()
+            self._set_headers(200)
+            self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+            return
+
+        if path == "/api/meta/status":
+            res = self.engine.get_meta_status()
+            self._set_headers(200)
+            self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+            return
+
         if path == "/api/state":
             try:
                 state = self.engine.get_state()
@@ -135,6 +147,69 @@ class PanelHTTPRequestHandler(BaseHTTPRequestHandler):
                 body = {}
 
         try:
+            if path == "/api/projects/ingest":
+                p = body.get("project", "default")
+                s = body.get("source", "doc.txt")
+                c = body.get("content", "")
+                sc = body.get("scope", "local-only")
+                res = self.engine.ingest_project_source(p, s, c, sc)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/projects/query":
+                p = body.get("project", "default")
+                q = body.get("query", "")
+                cap = body.get("capability", "deliverable_production")
+                res = self.engine.query_and_checkpoint(p, q, capability=cap)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/capabilities/compare":
+                mid = body["mission_id"]
+                res = self.engine.run_capability_compare(mid)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/capabilities/propose_deliverable":
+                mid = body["mission_id"]
+                title = body.get("title", "Entregable Contextual")
+                crit = body.get("criteria")
+                res = self.engine.run_capability_propose_deliverable(mid, title=title, criteria=crit)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/capabilities/execute_deliverable":
+                mid = body["mission_id"]
+                tdir = body.get("target_dir", "artifacts")
+                fname = body.get("filename", "entregable.md")
+                h = body["approved_draft_sha256"]
+                res = self.engine.run_capability_execute_deliverable(mid, target_dir=tdir, filename=fname, approved_draft_sha256=h)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/projects/reingest":
+                p = body.get("project", "default")
+                s = body.get("source", "")
+                res = self.engine.reingest_source(p, s)
+                self._set_headers(200)
+                self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+                return
+
+            if path == "/api/open_artifact":
+                path_str = body.get("path", "")
+                target_p = Path(path_str).resolve()
+                if not target_p.exists():
+                    raise FileNotFoundError("Artefacto no encontrado")
+                txt = target_p.read_text(encoding="utf-8", errors="replace")
+                self._set_headers(200)
+                self.wfile.write(json.dumps({"status": "ok", "path": str(target_p), "content": txt}, ensure_ascii=False).encode("utf-8"))
+                return
+
             if path == "/api/opt_in":
                 res = self.engine.set_opt_in(body.get("enabled", False))
                 self._set_headers(200)

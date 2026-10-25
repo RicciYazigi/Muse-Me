@@ -8,6 +8,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import time
 from pathlib import Path
 from uuid import uuid4
 
@@ -28,7 +29,30 @@ class ProjectMemory:
         CREATE TABLE IF NOT EXISTS missions (
           id TEXT PRIMARY KEY, project TEXT, goal TEXT, refs TEXT,
           checkpoint TEXT, state TEXT);
+        CREATE TABLE IF NOT EXISTS source_files (
+          project TEXT, source TEXT, root_path TEXT, relative_path TEXT, file_hash TEXT, mtime REAL,
+          PRIMARY KEY(project, source));
         ''')
+        self._ensure_schema()
+
+    def _ensure_schema(self):
+        cursor = self.db.cursor()
+        cursor.execute("PRAGMA table_info(missions)")
+        existing_cols = {row["name"] for row in cursor.fetchall()}
+        cols_to_add = [
+            ("capability", "TEXT"),
+            ("criteria", "TEXT"),
+            ("proposal", "TEXT"),
+            ("approvals", "TEXT"),
+            ("artifact_path", "TEXT"),
+            ("artifact_hash", "TEXT"),
+            ("error", "TEXT"),
+            ("completed_at", "REAL")
+        ]
+        with self.db:
+            for col, col_type in cols_to_add:
+                if col not in existing_cols:
+                    self.db.execute(f"ALTER TABLE missions ADD COLUMN {col} {col_type}")
 
     def close(self):
         self.db.close()
@@ -56,17 +80,31 @@ class ProjectMemory:
         return revision
 
     def ingest_text(self, project, root, relative_path, scope='local-only'):
-        root = Path(root).resolve(strict=True)
-        path = (root / relative_path).resolve(strict=True)
-        if not path.is_relative_to(root):
+        root_path = Path(root).resolve(strict=True)
+        path = (root_path / relative_path).resolve(strict=True)
+        if not path.is_relative_to(root_path):
             raise PermissionError('fuera de la carpeta autorizada')
+        rel_posix = path.relative_to(root_path).as_posix()
         if scope == 'restricted':
-            return self.put(project, path.relative_to(root).as_posix(), '', scope)
+            with self.db:
+                self.db.execute('DELETE FROM source_files WHERE project=? AND source=?', (project, rel_posix))
+            return self.put(project, rel_posix, '', scope)
         if path.suffix.lower() not in ('.txt', '.md', '.py', '.json', '.csv'):
             raise ValueError('formato no soportado; convertir explícitamente a texto')
         if path.stat().st_size > 1_000_000:
             raise ValueError('archivo supera 1 MB; segmentación pendiente')
-        return self.put(project, path.relative_to(root).as_posix(), path.read_text(encoding='utf-8'), scope)
+
+        content = path.read_text(encoding='utf-8')
+        file_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
+        mtime = path.stat().st_mtime
+        revision = self.put(project, rel_posix, content, scope)
+
+        with self.db:
+            self.db.execute(
+                'INSERT OR REPLACE INTO source_files VALUES (?,?,?,?,?,?)',
+                (project, rel_posix, str(root_path), rel_posix, file_hash, mtime)
+            )
+        return revision
 
     def search(self, project, query, *, external=False, budget=12000, limit=8):
         if budget <= 0 or limit <= 0:
@@ -88,10 +126,11 @@ class ProjectMemory:
                 budget -= len(item['content'])
         return selected
 
-    def checkpoint(self, project, goal, refs, note=''):
+    def checkpoint(self, project, goal, refs, note='', capability='deliverable_production', criteria=None):
         if not refs or not goal.strip():
             raise ValueError('misión requiere objetivo y evidencia')
         mission = 'mission-' + uuid4().hex
+        crit_json = json.dumps(criteria, ensure_ascii=False) if criteria else None
         with self.db:
             # Validate revision ownership; a reference from another project is invalid.
             for source, revision in refs.items():
@@ -99,8 +138,9 @@ class ProjectMemory:
                                       (project, source)).fetchone()
                 if not row or row['revision'] != revision or row['scope'] == 'restricted':
                     raise ValueError('referencia no vigente o no autorizada')
-            self.db.execute('INSERT INTO missions VALUES (?,?,?,?,?,?)',
-                            (mission, project, goal, json.dumps(refs), note, 'draft'))
+            self.db.execute('''INSERT INTO missions (id, project, goal, refs, checkpoint, state, capability, criteria)
+                               VALUES (?,?,?,?,?,?,?,?)''',
+                            (mission, project, goal, json.dumps(refs), note, 'draft', capability, crit_json))
         return mission
 
     def resume(self, mission):
@@ -115,8 +155,50 @@ class ProjectMemory:
                                       (result['project'], source)).fetchone()
             if not current or current['revision'] != revision or current['scope'] == 'restricted':
                 result['changed_sources'].append(source)
+                continue
+            # Also check if file on disk has changed or disappeared
+            sf = self.db.execute('SELECT root_path, relative_path, file_hash FROM source_files WHERE project=? AND source=?',
+                                 (result['project'], source)).fetchone()
+            if sf and sf['root_path'] and sf['relative_path']:
+                disk_path = Path(sf['root_path']) / sf['relative_path']
+                if not disk_path.exists():
+                    result['changed_sources'].append(source)
+                else:
+                    try:
+                        cur_text = disk_path.read_text(encoding='utf-8')
+                        cur_hash = hashlib.sha256(cur_text.encode('utf-8')).hexdigest()
+                        if cur_hash != sf['file_hash']:
+                            result['changed_sources'].append(source)
+                    except Exception:
+                        result['changed_sources'].append(source)
+
         result['needs_review'] = bool(result['changed_sources'])
         return result
+
+    def update_mission_proposal(self, mission_id, proposal_json, capability=None, criteria=None):
+        with self.db:
+            if capability and criteria:
+                self.db.execute('UPDATE missions SET proposal=?, state=?, capability=?, criteria=? WHERE id=?',
+                                (proposal_json, 'proposal_ready', capability, criteria, mission_id))
+            elif capability:
+                self.db.execute('UPDATE missions SET proposal=?, state=?, capability=? WHERE id=?',
+                                (proposal_json, 'proposal_ready', capability, mission_id))
+            else:
+                self.db.execute('UPDATE missions SET proposal=?, state=? WHERE id=?',
+                                (proposal_json, 'proposal_ready', mission_id))
+
+    def update_mission_state(self, mission_id, state, error=None):
+        with self.db:
+            self.db.execute('UPDATE missions SET state=?, error=? WHERE id=?',
+                            (state, error, mission_id))
+
+    def mark_mission_completed(self, mission_id, artifact_path, artifact_hash, approvals=None):
+        appr_json = json.dumps(approvals, ensure_ascii=False) if approvals else None
+        now = time.time()
+        with self.db:
+            self.db.execute('''UPDATE missions SET state='completed', artifact_path=?, artifact_hash=?,
+                               approvals=?, completed_at=?, error=NULL WHERE id=?''',
+                            (artifact_path, artifact_hash, appr_json, now, mission_id))
 
     def payload(self, mission):
         state = self.resume(mission)

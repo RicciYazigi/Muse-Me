@@ -42,7 +42,7 @@ from ..operators.antigravity import AntigravityAssistedOperator
 
 
 class PanelEngine:
-    def __init__(self, db_path: Path | str | None = None, runs_dir: Path | str | None = None, use_mock_surfaces: bool = False):
+    def __init__(self, db_path: Path | str | None = None, runs_dir: Path | str | None = None, use_mock_surfaces: bool = False, project_memory_path: Path | str | None = None):
         root = Path(__file__).resolve().parent.parent.parent.parent
         self.runs_dir = Path(runs_dir) if runs_dir else (root / "data" / "runs")
         self.runs_dir.mkdir(parents=True, exist_ok=True)
@@ -124,6 +124,11 @@ class PanelEngine:
 
     def close(self) -> None:
         with self._lock:
+            if hasattr(self, 'project_memory'):
+                try:
+                    self.project_memory.close()
+                except Exception:
+                    pass
             if sys.platform == "win32" and not self.use_mock_surfaces:
                 for h in (getattr(self, "host_s1", None), getattr(self, "host_s2", None), getattr(self, "host_target", None)):
                     if h:
@@ -656,3 +661,134 @@ class PanelEngine:
                 "last_chain_links": [{"kind": l["kind"], "hash": l["hash"][:12] + "…"} for l in chain_links[-6:]],
                 "last_tamper_log": self.last_tamper_log,
             }
+
+    def _init_demo_project_data_if_empty(self) -> None:
+        try:
+            count = self.project_memory.db.execute("SELECT COUNT(*) FROM sources").fetchone()[0]
+            if count == 0:
+                self.project_memory.put(
+                    "demo-latam",
+                    "politica_descuentos_v24.md",
+                    "Especificación v2.4 (2026): Para órdenes de región LATAM con cupón PROMO_REGIONAL, aplicar 15% de descuento sobre el subtotal antes de impuestos con tope máximo de 25.00 USD.",
+                    "may_transfer"
+                )
+                self.project_memory.put(
+                    "demo-latam",
+                    "manual_descuentos_v10_obsoleto.md",
+                    "Manual v1.0 (2024): Descuentos promocionales generales se calculan al 5% sin tope regional para clientes activos.",
+                    "may_transfer"
+                )
+                self.project_memory.put(
+                    "demo-latam",
+                    "claves_privadas_infra.txt",
+                    "STRIPE_API_KEY=sk_live_secret_sample_token_not_for_export; AWS_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                    "restricted"
+                )
+        except Exception:
+            pass
+
+    def get_meta_status(self) -> dict[str, Any]:
+        import os
+        has_key = bool(os.environ.get("MODEL_API_KEY"))
+        model_name = os.environ.get("MODEL_NAME", "Llama-3.3-70B-Instruct")
+        return {
+            "available": has_key,
+            "model": model_name if has_key else "Ninguno (Modo Asistido / Fixture)",
+            "mode": "meta_cloud_inference" if has_key else "assisted_operator",
+            "notice": "Credencial verificada en entorno local" if has_key else "Meta pendiente de conexión; operando en modo asistido local"
+        }
+
+    def get_projects_overview(self) -> dict[str, Any]:
+        with self._lock:
+            rows = self.project_memory.db.execute("SELECT DISTINCT project FROM sources ORDER BY project").fetchall()
+            projects = [r[0] for r in rows]
+            if not projects:
+                projects = ["demo-latam"]
+            data = []
+            for p in projects:
+                src_rows = self.project_memory.db.execute(
+                    "SELECT source, revision, scope FROM sources WHERE project=? ORDER BY source", (p,)
+                ).fetchall()
+                sources = []
+                for s in src_rows:
+                    sources.append({"source": s["source"], "revision": s["revision"], "scope": s["scope"]})
+                m_rows = self.project_memory.db.execute(
+                    "SELECT id, goal, state, capability, artifact_path, artifact_hash FROM missions WHERE project=? ORDER BY rowid DESC LIMIT 5",
+                    (p,)
+                ).fetchall()
+                missions = [dict(m) for m in m_rows]
+                data.append({
+                    "project": p,
+                    "sources": sources,
+                    "recent_missions": missions
+                })
+            return {"projects": data, "meta": self.get_meta_status()}
+
+    def ingest_project_source(self, project: str, source_name: str, content: str, scope: str = "local-only") -> dict[str, Any]:
+        with self._lock:
+            rev = self.project_memory.put(project, source_name, content, scope)
+            return {"project": project, "source": source_name, "revision": rev, "scope": scope}
+
+    def query_and_checkpoint(self, project: str, query: str, capability: str = "deliverable_production", external: bool = True) -> dict[str, Any]:
+        with self._lock:
+            evidence = self.project_memory.search(project, query, external=external)
+            if not evidence:
+                rows = self.project_memory.db.execute(
+                    "SELECT source, revision, scope, content FROM sources s JOIN revisions r ON s.project=r.project AND s.source=r.source AND s.revision=r.revision WHERE s.project=? AND s.scope != 'restricted'",
+                    (project,)
+                ).fetchall()
+                refs = {r['source']: r['revision'] for r in rows}
+                evidence = [{"source": r['source'], "revision": r['revision'], "scope": r['scope'], "content": r['content']} for r in rows]
+            else:
+                refs = {r['source']: r['revision'] for r in evidence}
+
+            if not refs:
+                raise ValueError(f"No hay fuentes autorizadas en el proyecto '{project}' con permiso 'may_transfer'.")
+
+            mission_id = self.project_memory.checkpoint(project, query, refs, capability=capability)
+            return {
+                "mission_id": mission_id,
+                "project": project,
+                "query": query,
+                "capability": capability,
+                "evidence_count": len(evidence),
+                "evidence": evidence
+            }
+
+    def run_capability_compare(self, mission_id: str) -> dict[str, Any]:
+        with self._lock:
+            from ..capabilities import compare_evidence
+            return compare_evidence(self.project_memory, mission_id)
+
+    def run_capability_propose_deliverable(self, mission_id: str, title: str = "Entregable Contextual", criteria: dict | None = None) -> dict[str, Any]:
+        with self._lock:
+            from ..capabilities import propose_deliverable
+            return propose_deliverable(self.project_memory, mission_id, title=title, criteria=criteria)
+
+    def run_capability_execute_deliverable(self, mission_id: str, target_dir: str = "artifacts", filename: str = "entregable.md", approved_draft_sha256: str = "") -> dict[str, Any]:
+        with self._lock:
+            from ..capabilities import execute_deliverable_action
+            root = Path(__file__).resolve().parent.parent.parent.parent
+            target_path = root / target_dir if not Path(target_dir).is_absolute() else Path(target_dir)
+            target_path.mkdir(parents=True, exist_ok=True)
+            return execute_deliverable_action(
+                self.project_memory,
+                mission_id,
+                target_path,
+                filename,
+                approved_draft_sha256,
+                user_approved=True
+            )
+
+    def reingest_source(self, project: str, source: str) -> dict[str, Any]:
+        with self._lock:
+            sf = self.project_memory.db.execute(
+                "SELECT root_path, relative_path, file_hash FROM source_files WHERE project=? AND source=?",
+                (project, source)
+            ).fetchone()
+            if sf and sf["root_path"] and sf["relative_path"]:
+                disk_path = Path(sf["root_path"]) / sf["relative_path"]
+                if disk_path.exists():
+                    rev = self.project_memory.ingest_text(project, sf["root_path"], sf["relative_path"], scope="may_transfer")
+                    return {"status": "reingested", "project": project, "source": source, "new_revision": rev}
+            return {"status": "skipped", "message": "No hay archivo local asociado en disco para reingestar automáticamente"}
