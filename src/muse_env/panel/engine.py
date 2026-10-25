@@ -493,11 +493,17 @@ class PanelEngine:
             if not self.draft or not self.insertion_approval:
                 raise ValueError("Se requiere borrador y aprobación de inserción previa")
 
+            # R6 Invariant: Apply fuse_sensor to Win32 insertion pathway!
+            t_session = time.monotonic() - self._fuse_session_start
             raw_delivery = insert_reply(
                 store=self.store,
                 draft=self.draft,
                 surface=self.target,
                 approval=self.insertion_approval,
+                sensor=self.fuse_sensor,
+                risk_score=0.01,
+                t=t_session,
+                session="panel_session"
             )
 
             delivery_ok = (raw_delivery.get("status") == "inserted_not_sent")
@@ -701,13 +707,23 @@ class PanelEngine:
 
     def get_meta_status(self) -> dict[str, Any]:
         import os
-        has_key = bool(os.environ.get("MODEL_API_KEY"))
+        key = os.environ.get("MODEL_API_KEY", "").strip()
+        has_key = bool(key)
         model_name = os.environ.get("MODEL_NAME", "Llama-3.3-70B-Instruct")
+        # R7 Epistemic Honesty: Having a key string is NOT verified connection!
+        # Do not claim verified connection without successful live inference.
+        if has_key:
+            return {
+                "available": True,
+                "model": model_name,
+                "mode": "configured_untested",
+                "notice": "Credencial configurada localmente (conexión de red no verificada; operando con guardas locales)"
+            }
         return {
-            "available": has_key,
-            "model": model_name if has_key else "Ninguno (Modo Asistido / Fixture)",
-            "mode": "meta_cloud_inference" if has_key else "assisted_operator",
-            "notice": "Credencial verificada en entorno local" if has_key else "Meta pendiente de conexión; operando en modo asistido local"
+            "available": False,
+            "model": "Ninguno (Modo Asistido / Fixture)",
+            "mode": "assisted_operator",
+            "notice": "Meta pendiente de conexión; operando en modo asistido local"
         }
 
     def get_projects_overview(self) -> dict[str, Any]:
@@ -780,7 +796,16 @@ class PanelEngine:
         with self._lock:
             from ..capabilities import execute_deliverable_action, compare_evidence
             root = Path(__file__).resolve().parent.parent.parent.parent
-            target_path = root / target_dir if not Path(target_dir).is_absolute() else Path(target_dir)
+
+            # R3 Invariant: Enforce registered artifact roots only; do not allow caller to write outside artifacts dir
+            if Path(target_dir).is_absolute():
+                target_path = Path(target_dir).resolve()
+                allowed_root = (root / "artifacts").resolve()
+                if not (target_path == allowed_root or target_path.is_relative_to(allowed_root)):
+                    raise PermissionError(f"Directorio de destino '{target_dir}' no est en la lista de races autorizadas ('artifacts').")
+            else:
+                target_path = (root / "artifacts" / target_dir).resolve() if target_dir != "artifacts" else (root / "artifacts").resolve()
+
             target_path.mkdir(parents=True, exist_ok=True)
 
             # B3: Strict monotonic session time (without artificial double-increment)

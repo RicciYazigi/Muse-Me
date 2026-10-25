@@ -64,14 +64,12 @@ class TrajectorySensor:
     def __init__(self, threshold: float = 0.04, policy: GatePolicy | None = None):
         self.threshold = threshold
         self.policy = policy or GatePolicy()
-        # Default stop threshold matches canonical I2t threshold=0.04
-        # degrade_threshold activates half-way (0.02) or at custom policy
         if policy is not None:
             self.stop_threshold = policy.stop_threshold
             self.degrade_threshold = policy.degrade_threshold
         else:
             self.stop_threshold = threshold
-            self.degrade_threshold = threshold * 0.5  # 0.02
+            self.degrade_threshold = threshold * 0.5
 
         self.fuse = Fuse(
             statistic="i2t",

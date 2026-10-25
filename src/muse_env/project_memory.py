@@ -91,7 +91,7 @@ class ProjectMemory:
                 status = "active"
 
         revision = 'evt-' + hashlib.sha256(json.dumps(
-            [project, source, content, scope], ensure_ascii=False).encode()).hexdigest()[:32]
+            [project, source, content, scope, status or "active", superseded_by or ""], ensure_ascii=False).encode()).hexdigest()[:32]
         with self.db:
             self.db.execute('INSERT OR IGNORE INTO revisions VALUES (?,?,?,?)',
                             (revision, project, source, content))
@@ -243,9 +243,9 @@ class ProjectMemory:
         result['refs'] = json.loads(result['refs'])
         result['changed_sources'] = []
         for source, revision in result['refs'].items():
-            current = self.db.execute('SELECT revision,scope FROM sources WHERE project=? AND source=?',
+            current = self.db.execute('SELECT revision,scope,status FROM sources WHERE project=? AND source=?',
                                       (result['project'], source)).fetchone()
-            if not current or current['revision'] != revision or current['scope'] == 'restricted':
+            if not current or current['revision'] != revision or current['scope'] == 'restricted' or current['status'] == 'superseded':
                 result['changed_sources'].append(source)
                 continue
             # Also check if file on disk has changed or disappeared
@@ -269,6 +269,10 @@ class ProjectMemory:
 
     def update_mission_proposal(self, mission_id, proposal_json, capability=None, criteria=None):
         with self.db:
+            # Check terminal state protection (R4): completed missions cannot be reopened in DB
+            cur = self.db.execute('SELECT state FROM missions WHERE id=?', (mission_id,)).fetchone()
+            if cur and cur['state'] == 'completed':
+                raise ValueError(f"Misión {mission_id} está sellada como 'completed'; no puede actualizarse la propuesta.")
             if capability and criteria:
                 self.db.execute('UPDATE missions SET proposal=?, state=?, capability=?, criteria=? WHERE id=?',
                                 (proposal_json, 'proposal_ready', capability, criteria, mission_id))

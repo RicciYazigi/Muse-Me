@@ -2309,3 +2309,26 @@ Tras la verificación viva del co-arquitecto (**`VERIFICACION_PASO_05_MUSE_ME.md
   - `eba2c49`: *fix(mcp): remediacion B1 anti-bypass en tool MCP y limpieza de residuos B2/B3*
 - **Suite de Pruebas:** 89 passed en Windows / 76 passed, 13 skipped en Linux (100% de éxito).
 - **Habilitación Estratégica:** Repositorio limpio y blindado por diseño. Listo para el desarrollo de N1 (Ojos UIA con driver de accesibilidad) y N2 (Muse real).
+
+
+---
+
+## 6. Resolución Integral de Invariantes R1–R7 (Post 5 Auditorías)
+
+Tras la revisión técnica adversarial documentada en `REVISION.md` y el encargo formal `ENCARGO_AG_CIERRE_INVARIANTES_POST_5_AUDITORIAS.md`, se cerraron los siete hallazgos residuales mediante pruebas rojas y remediaciones de raíz:
+
+### 6.1 Matriz de Remediación R1–R7
+| Hallazgo | Nivel | Diagnóstico | Remediación Implementada | Evidencia / Prueba |
+| :--- | :--- | :--- | :--- | :--- |
+| **R1** | **P0** | Consumidor MCP podía forzar `external=false` en los argumentos | `handle_call_tool("get_context_package")` impone `external=True` incondicionalmente en `mcp_server.py`. Quien consume no rebaja la política. | `test_mcp_server_blocks_local_only_leak` con intento malicioso explícito `external=False`. |
+| **R2** | **P0** | Borrador alterado sobrescribía archivo antes de rechazo de hash | `capabilities.py` recalcula el hash de `draft_markdown` **antes** de crear rutas o tocar disco. Si difiere, aborta sin tocar el archivo. Escritura atómica a archivo `.tmp` previa a reemplazo. | `test_r2_altered_draft_rejected_before_writing_or_overwriting`: canario preexistente queda 100% intacto. |
+| **R3** | **P0** | Raíces absolutas arbitrarias y falsos consentimientos de transferencia | `panel/engine.py` restringe las rutas de destino estrictamente a la raíz autorizada (`artifacts/`). Al completar localmente, se registra `local_effect_approved` y no falsos consentimientos `gate1_transfer`. | Verificado en `test_panel.py` y `test_f02_f03_f04`. |
+| **R4** | **P1** | Borrado de artefacto o `update_mission_proposal` permitía reabrir misión completada | `capabilities.py` prohíbe re-ejecución si el artefacto fue borrado (estado sellado terminal). `project_memory.py:update_mission_proposal` rechaza modificar misiones en estado `completed`. | `test_r4_terminal_mission_cannot_be_reexecuted_if_artifact_deleted`. |
+| **R5** | **P1** | MCP entregaba evidencia desactualizada antes de advertir cambios en disco; cambios de metadatos no invalidaban | `mcp_server.py` revalida archivos en disco antes de compilar. `project_memory.py` incluye `status` y `superseded_by` en el hash de revisión (`evt-...`), invalidando checkpoints anteriores si la vigencia cambia. | Verificado en suite de contexto y memoria. |
+| **R6** | **P1** | STOP del sensor no bloqueaba la ruta de inserción Win32 del panel | `panel/engine.py:execute_insertion` pasa activamente `self.fuse_sensor` a `insert_reply`. En estado `STOP`, la inserción en la superficie se bloquea tajantemente. | `test_r6_fuse_stop_blocks_panel_execute_insertion` (readback=False, status='blocked'). |
+| **R7** | **P1** | Estado Meta reportaba credencial verificada con clave ficticia | `panel/engine.py:get_meta_status` distingue honestamente entre `assisted_operator` (sin clave) y `configured_untested` (clave configurada localmente, red no comprobada). Nunca promete conexión viva sin inferencia real. | Verificado en API `/api/meta/status` y `get_meta_status`. |
+
+### 6.2 Certificación Final
+- **Suite Automatizada:** **92 passed** en Windows (100% de éxito en 50.12s), 79 passed / 13 skipped en Linux.
+- **Árbol Git:** Limpio, verificado y sincronizado con `origin/main`.
+- **Fase Siguiente:** Despejada completamente para **N1 (Ojos UIA)** y **N2 (Conexión de Inferencia Meta Llama)**.

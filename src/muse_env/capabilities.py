@@ -1,4 +1,5 @@
 from __future__ import annotations
+from uuid import uuid4
 import time
 from .gate import TrajectorySensor
 """Contracts and engines for Muse-Me core capabilities:
@@ -312,47 +313,53 @@ def execute_deliverable_action(
     if state["needs_review"]:
         raise ValueError(f"Acción bloqueada: las fuentes de la misión {mission_id} cambiaron y requieren nueva revisión.")
 
-    # Check for idempotent completed state with disk readback re-verification (F03)
+    # Check for terminal completed state (R4 / F03):
+    # If mission is completed, it is sealed. Deleting artifact from disk does NOT allow re-execution!
     if state.get("state") == "completed":
         existing_path = state.get("artifact_path")
         existing_hash = state.get("artifact_hash")
-        if existing_path and Path(existing_path).exists():
-            current_disk_content = Path(existing_path).read_text(encoding="utf-8")
-            current_disk_hash = sha256_digest(current_disk_content)
-            if current_disk_hash != existing_hash:
-                return {
-                    "mission_id": mission_id,
-                    "status": "artifact_modified_on_disk",
-                    "message": "ALERTA: El archivo en disco fue modificado externamente después de la compleción.",
-                    "artifact_path": existing_path,
-                    "recorded_hash": existing_hash,
-                    "current_disk_hash": current_disk_hash,
-                    "readback_verified": False,
-                    "current_integrity": False,
-                    "user_approved": True
-                }
+        if not existing_path or not Path(existing_path).exists():
+            raise ValueError(f"Misión terminal {mission_id} está completada pero el archivo '{existing_path}' fue eliminado de disco. Re-ejecutar está prohibido por invariante de una sola ejecución.")
+
+        current_disk_content = Path(existing_path).read_text(encoding="utf-8")
+        current_disk_hash = sha256_digest(current_disk_content)
+        if current_disk_hash != existing_hash:
             return {
                 "mission_id": mission_id,
-                "status": "already_completed_idempotent",
-                "message": "La misión ya fue completada previamente. Hash en disco verificado intacto.",
+                "status": "artifact_modified_on_disk",
+                "message": "ALERTA: El archivo en disco fue modificado externamente después de la compleción.",
                 "artifact_path": existing_path,
-                "artifact_hash": existing_hash,
-                "readback_verified": True,
-                "current_integrity": True,
+                "recorded_hash": existing_hash,
+                "current_disk_hash": current_disk_hash,
+                "readback_verified": False,
+                "current_integrity": False,
                 "user_approved": True
             }
-
+        return {
+            "mission_id": mission_id,
+            "status": "already_completed_idempotent",
+            "message": "La misión ya fue completada previamente. Hash en disco verificado intacto.",
+            "artifact_path": existing_path,
+            "artifact_hash": existing_hash,
+            "readback_verified": True,
+            "current_integrity": True,
+            "user_approved": True
+        }
     proposal_str = state.get("proposal")
     if not proposal_str:
         raise ValueError("No existe una propuesta de entregable registrada para esta misión.")
 
     proposal = json.loads(proposal_str)
-    if proposal.get("draft_sha256") != approved_draft_sha256:
-        raise ValueError("El hash de aprobación no coincide con el borrador vigente de la propuesta.")
-
     draft_content = proposal.get("draft_markdown", "")
     if not draft_content:
         raise ValueError("El borrador de la propuesta está vacío.")
+
+    # R2 P0 Invariant: Recalculate hash of actual draft_markdown BEFORE creating paths or writing files!
+    recalculated_draft_hash = sha256_digest(draft_content)
+    if recalculated_draft_hash != approved_draft_sha256:
+        raise ValueError(f"El hash de aprobación no coincide con el contenido real del borrador ({recalculated_draft_hash[:12]}... != {approved_draft_sha256[:12]}...).")
+    if proposal.get("draft_sha256") != approved_draft_sha256:
+        raise ValueError("El hash de aprobación no coincide con el campo draft_sha256 de la propuesta.")
 
     # Target directory safety checks (no path traversal)
     base_target = Path(target_dir).resolve(strict=True)
@@ -360,25 +367,33 @@ def execute_deliverable_action(
     if not out_file.is_relative_to(base_target):
         raise PermissionError(f"Ruta de destino '{filename}' escapa del directorio autorizado '{base_target}'.")
 
-    # Write exact content
+    # Atomic write to temporary file before publishing to avoid corrupting pre-existing files on failure
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(draft_content, encoding="utf-8")
+    temp_out = out_file.with_suffix(f".tmp_{uuid4().hex[:8]}")
+    try:
+        temp_out.write_text(draft_content, encoding="utf-8")
+        # Cryptographic readback on temporary file
+        temp_readback = temp_out.read_text(encoding="utf-8")
+        temp_hash = sha256_digest(temp_readback)
+        if temp_hash != approved_draft_sha256:
+            memory.update_mission_state(mission_id, "failed", error="Fallo en comprobación readback previa: hash difiere del aprobado.")
+            raise RuntimeError("Fallo crítico de integridad: el archivo temporal no coincide con el hash aprobado.")
+        # Atomic replace
+        temp_out.replace(out_file)
+    finally:
+        if temp_out.exists():
+            temp_out.unlink(missing_ok=True)
 
-    # Cryptographic Readback Check
     disk_readback = out_file.read_text(encoding="utf-8")
     disk_hash = sha256_digest(disk_readback)
 
-    if disk_hash != approved_draft_sha256:
-        memory.update_mission_state(mission_id, "failed", error="Fallo en comprobación readback: hash en disco difiere del aprobado.")
-        raise RuntimeError("Fallo crítico de integridad: el archivo escrito en disco no coincide con el hash aprobado.")
-
-    # Record completion in ProjectMemory
+    # Record completion in ProjectMemory with honest approvals (no false gate1_transfer on local deliverable)
     memory.mark_mission_completed(
         mission_id=mission_id,
         artifact_path=str(out_file),
         artifact_hash=disk_hash,
         approvals={
-            "gate1_transfer_approved": True,
+            "local_effect_approved": True,
             "gate2_action_approved": True,
             "approved_hash": approved_draft_sha256,
             "verified_disk_hash": disk_hash

@@ -432,7 +432,7 @@ def test_panel_engine_instantiates_fuse_and_evaluates_on_deliverable(tmp_path):
 
         # Execute deliverable through panel engine
         res = engine.run_capability_execute_deliverable(
-            mid, target_dir=str(tmp_path), filename="fuse_doc.md", approved_draft_sha256=prop["draft_sha256"]
+            mid, target_dir="artifacts", filename="fuse_doc.md", approved_draft_sha256=prop["draft_sha256"]
         )
         assert res["readback_verified"] is True
         assert Path(res["artifact_path"]).exists()

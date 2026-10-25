@@ -115,6 +115,30 @@ class MuseMeMCPServer:
 
     def get_context_package(self, goal: str, project: str = "demo-latam", token_budget: int = 1500, external: bool = True) -> Dict[str, Any]:
         """Tool 1: Compile governed context package with token budget, vigencia filter, and reasoned exclusions."""
+        # R5 / Runtime validation: validate positive budget
+        if not isinstance(token_budget, int) or token_budget <= 0:
+            raise ValueError("token_budget debe ser un entero positivo.")
+        if not isinstance(goal, str) or not goal.strip():
+            raise ValueError("goal debe ser una cadena no vacía.")
+
+        # Re-check on-disk sources for project to avoid delivering stale context before resume
+        sources = self.memory.db.execute("SELECT source, root_path, relative_path, file_hash FROM source_files WHERE project=?", (project,)).fetchall()
+        for sf in sources:
+            if sf["root_path"] and sf["relative_path"]:
+                dp = Path(sf["root_path"]) / sf["relative_path"]
+                if dp.exists():
+                    try:
+                        cur_text = dp.read_text(encoding="utf-8")
+                        import hashlib
+                        cur_h = hashlib.sha256(cur_text.encode("utf-8")).hexdigest()
+                        if cur_h != sf["file_hash"]:
+                            # Auto-reingest or refresh source file hash so search reflects current reality
+                            s_row = self.memory.db.execute("SELECT scope FROM sources WHERE project=? AND source=?", (project, sf["source"])).fetchone()
+                            orig_scope = s_row["scope"] if s_row else "local-only"
+                            self.memory.ingest_text(project, sf["root_path"], sf["relative_path"], scope=orig_scope)
+                    except Exception:
+                        pass
+
         char_budget = token_budget * 4
         search_res = self.memory.search_with_exclusions(project, goal, external=external, budget=char_budget)
         budgeted_evidence = search_res["selected"]

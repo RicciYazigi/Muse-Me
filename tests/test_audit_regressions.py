@@ -185,3 +185,106 @@ def test_f08_xss_prevention_in_panel_templates():
     escaped = malicious_payload.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&#039;")
     assert "<" not in escaped and ">" not in escaped and "'" not in escaped
     assert "&lt;img" in escaped
+
+
+def test_r2_altered_draft_rejected_before_writing_or_overwriting(tmp_path):
+    """R2 P0: If proposal draft_markdown is altered, reject before writing and leave existing file intact."""
+    from muse_env.project_memory import ProjectMemory
+    from muse_env.capabilities import propose_deliverable, execute_deliverable_action
+    import json
+
+    db_p = tmp_path / "pm_r2.sqlite"
+    mem = ProjectMemory(str(db_p))
+    try:
+        mem.put("proj_r2", "doc.md", "Contenido seguro original.", scope="may_transfer")
+        mid = mem.checkpoint("proj_r2", "Objetivo R2", {"doc.md": mem.db.execute("SELECT revision FROM sources WHERE source='doc.md'").fetchone()[0]})
+        prop = propose_deliverable(mem, mid, title="Reporte R2")
+        valid_hash = prop["draft_sha256"]
+
+        # Pre-create an existing file with canary content
+        out_file = tmp_path / "reporte.md"
+        out_file.write_text("PRE_EXISTING_CANARY_DO_NOT_OVERWRITE", encoding="utf-8")
+
+        # Tamper proposal draft_markdown in memory while keeping approved_draft_sha256 matching the original
+        raw_prop = json.loads(mem.resume(mid)["proposal"])
+        raw_prop["draft_markdown"] = "MALICIOUS_UNAPPROVED_ALTERED_CONTENT"
+        # Directly update raw proposal in DB
+        mem.db.execute("UPDATE missions SET proposal=? WHERE id=?", (json.dumps(raw_prop), mid))
+
+        # Attempt execution with valid_hash: MUST fail BEFORE touching out_file
+        with pytest.raises(ValueError, match="El hash de aprobaci.n no coincide"):
+            execute_deliverable_action(
+                mem, mid, target_dir=tmp_path, filename="reporte.md",
+                approved_draft_sha256=valid_hash, user_approved=True
+            )
+
+        # Invariant check: pre-existing file must remain 100% UNTOUCHED!
+        assert out_file.read_text(encoding="utf-8") == "PRE_EXISTING_CANARY_DO_NOT_OVERWRITE"
+    finally:
+        mem.close()
+
+
+def test_r4_terminal_mission_cannot_be_reexecuted_if_artifact_deleted(tmp_path):
+    """R4 P1: Deleting artifact does NOT permit re-execution of completed mission."""
+    from muse_env.project_memory import ProjectMemory
+    from muse_env.capabilities import propose_deliverable, execute_deliverable_action
+
+    db_p = tmp_path / "pm_r4.sqlite"
+    mem = ProjectMemory(str(db_p))
+    try:
+        mem.put("proj_r4", "doc.md", "Contenido para entregable terminal.", scope="may_transfer")
+        mid = mem.checkpoint("proj_r4", "Objetivo R4", {"doc.md": mem.db.execute("SELECT revision FROM sources WHERE source='doc.md'").fetchone()[0]})
+        prop = propose_deliverable(mem, mid, title="Reporte R4")
+
+        # Execute and complete mission
+        res = execute_deliverable_action(
+            mem, mid, target_dir=tmp_path, filename="reporte_r4.md",
+            approved_draft_sha256=prop["draft_sha256"], user_approved=True
+        )
+        assert res["status"] == "completed"
+        art_path = Path(res["artifact_path"])
+        assert art_path.exists()
+
+        # Delete artifact from disk
+        art_path.unlink()
+
+        # Attempting to re-execute must fail with ValueError (sealed terminal state)
+        with pytest.raises(ValueError, match="está completada pero el archivo"):
+            execute_deliverable_action(
+                mem, mid, target_dir=tmp_path, filename="reporte_r4.md",
+                approved_draft_sha256=prop["draft_sha256"], user_approved=True
+            )
+    finally:
+        mem.close()
+
+
+def test_r6_fuse_stop_blocks_panel_execute_insertion(tmp_path):
+    """R6 P1: Sensor in STOP blocks execute_insertion on panel."""
+    from muse_env.panel.engine import PanelEngine
+
+    db_p = tmp_path / "obs_r6.sqlite"
+    pm_p = tmp_path / "pm_r6.sqlite"
+    engine = PanelEngine(db_path=db_p, runs_dir=tmp_path, use_mock_surfaces=True, project_memory_path=pm_p)
+    try:
+        # Trip the fuse sensor to STOP
+        engine.fuse_sensor.observe(0.95, effect="insert", t=1.0, path="panel_session")
+        engine.fuse_sensor.observe(0.95, effect="insert", t=2.0, path="panel_session")
+        engine.fuse_sensor.observe(0.95, effect="write", t=3.0, path="panel_session")
+
+        # Setup draft and insertion approval with complete contract fields
+        engine.draft = {
+            "draft_id": "draft-r6-test",
+            "target_id": engine.target.name,
+            "text": "Respuesta contextual",
+            "citations": []
+        }
+        from muse_env.invoke import approve_insertion
+        engine.insertion_approval = approve_insertion(engine.draft, actor="operador")
+
+        # Execute insertion: must report blocked because sensor is tripped!
+        res = engine.execute_insertion()
+        assert res["status"] == "blocked", f"Expected blocked, got {res['status']}"
+        assert res["readback_verified"] is False
+    finally:
+        engine.store.close()
+        engine.project_memory.close()
