@@ -2270,3 +2270,42 @@ tests\test_project_memory.py ......                                      [ 85%]
 tests\test_windows_observer.py ............                              [100%]
 ============================= 85 passed in 49.47s =============================
 ```
+
+
+---
+
+## 5. Auditoría 5 y Ejecución del Paso 0.5 (Remediación Integral de Invariantes)
+
+### 5.1 Dictamen de la Quinta Auditoría
+El co-arquitecto clonó de forma limpia la versión `v0.2.0` (`0a0b066`), validando 72 passed / 13 skipped en Linux e identificando siete puntos críticos de discrepancia entre lo afirmado y lo implementado:
+1. **A1 (Crítico):** Servidor MCP llamaba `search_with_exclusions(..., external=False)`, entregando fuentes `local-only`.
+2. **A2 (Alto):** Fusible desconectado en el flujo de producción del panel web (evaluado solo en test sintético).
+3. **A3 (Alto):** `DEGRADE` permitía escrituras (`allowed = not stopped`).
+4. **A4 (Alto):** Gesto volcaba hasta 8 fuentes transferibles sin relevancia al no hallar coincidencias.
+5. **A5 (Medio):** Detección de vigencia por palabras clave inflada conceptualmente; tabla `claims` vacía.
+6. **A6 (Medio):** `escapeHtml` declarada en `panel.html` pero nunca invocada en plantillas dinámicas.
+7. **A7 (Medio):** Gesto de escritorio operando como CLI de un disparo y no como atajo residente.
+
+### 5.2 Remediaciones Ejecutadas en Commit `d07311a`
+- **A1:** MCP forzado a compilar con `external=True` por defecto; fuentes `local-only` auditadas en `excluded_sources`.
+- **A2:** `TrajectorySensor` instanciado activamente en `PanelEngine` con reloj monótono e inyección en `execute_deliverable_action`.
+- **A3:** Semántica de `DEGRADE` corregida: lectura permitida, escrituras/inserciones/transferencias estrictamente bloqueadas.
+- **A4:** Eliminado el volcado LIMIT 8 en `gesture.py`; ante falta de evidencia, devuelve `insufficient_evidence`.
+- **A5:** Reclasificado formalmente como *heurística de vigencia por directiva explícita (v0)* en STATUS y README.
+- **A6:** Invocación de `escapeHtml(...)` aplicada sobre todas las plantillas dinámicas en `panel.html`.
+- **A7:** Gesto documentado como *Invocación rápida de escritorio de un disparo*.
+
+### 5.3 Verificación de Paso 0.5 y Remediación Inmediata de Residuos (Commit `eba2c49`)
+Tras la verificación viva del co-arquitecto (**`VERIFICACION_PASO_05_MUSE_ME.md`**), se remediaron de inmediato los tres residuos identificados:
+- **B1 (Crítico - Anti-Bypass de Gobernanza MCP):** El handler `handle_call_tool("get_context_package")` forzó incondicionalmente `external=True`. Quien consume no puede rebajar la política. Añadido test rojo verificando que una petición maliciosa con `external=False` explícito mantiene bloqueada y excluida la fuente `local-only`.
+- **B2 (Medio - Riesgo Basado en Señales Declaradas y Reset de Operador):** 
+  - Eliminado el conteo de números de contenido como falso riesgo. El `risk_score` ahora se deriva exclusivamente de intentos de violar el ámbito de seguridad (`restricted` -> 0.90, `local-only` -> 0.40).
+  - Añadido el método `reset_fuse_session()` en `PanelEngine` permitiendo la reactivación formal por parte del operador humano tras un disparo de contención.
+- **B3 (Bajo - Reloj Monótono Limpio):** Eliminada la doble suma de tiempo artificial en la sesión del panel; ahora se utiliza exclusivamente `time.monotonic() - self._fuse_session_start`.
+
+### 5.4 Estado Verificado del Repositorio
+- **Commits Pusheados:**
+  - `d07311a`: *fix(audit): resolucion completa de Paso 0.5 (A1-A7) segun 5ta auditoria*
+  - `eba2c49`: *fix(mcp): remediacion B1 anti-bypass en tool MCP y limpieza de residuos B2/B3*
+- **Suite de Pruebas:** 89 passed en Windows / 76 passed, 13 skipped en Linux (100% de éxito).
+- **Habilitación Estratégica:** Repositorio limpio y blindado por diseño. Listo para el desarrollo de N1 (Ojos UIA con driver de accesibilidad) y N2 (Muse real).
