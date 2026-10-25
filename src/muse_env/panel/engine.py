@@ -783,30 +783,28 @@ class PanelEngine:
             target_path = root / target_dir if not Path(target_dir).is_absolute() else Path(target_dir)
             target_path.mkdir(parents=True, exist_ok=True)
 
-            # Monotonic session timestamp and risk derivation from declared discrepancy signals
+            # B3: Strict monotonic session time (without artificial double-increment)
             self._fuse_turn_index += 1
-            t_session = time.monotonic() - self._fuse_session_start + (self._fuse_turn_index * 0.1)
+            t_session = time.monotonic() - self._fuse_session_start
 
-            # Compute risk_score based on discrepancies or scope violations in mission
+            # B2: Derive risk strictly from declared security/scope signals:
+            # - Baseline benign operational risk: 0.01
+            # - Attempts to pull un-transferable or restricted scope: elevated risk
+            # Content discrepancies (different numbers in specs) are valid context, NOT trajectory risk!
             risk_score = 0.01
             try:
-                # Derive risk non-destructively: analyze state without overwriting deliverable proposal
                 st = self.project_memory.resume(mission_id)
-                recs = []
+                project = st.get("project", "default")
                 for s_name, rev in st.get("refs", {}).items():
-                    row = self.project_memory.db.execute("SELECT content FROM revisions WHERE revision=?", (rev,)).fetchone()
-                    if row:
-                        recs.append(row[0])
-                num_disc = 0
-                if len(recs) >= 2:
-                    import re
-                    for i in range(len(recs)):
-                        for j in range(i + 1, len(recs)):
-                            nums_a = set(re.findall(r'\b\d+(?:[.,]\d+)?%?\b', recs[i]))
-                            nums_b = set(re.findall(r'\b\d+(?:[.,]\d+)?%?\b', recs[j]))
-                            if nums_a ^ nums_b:
-                                num_disc += 1
-                risk_score = min(0.95, 0.02 + (num_disc * 0.15))
+                    s_row = self.project_memory.db.execute(
+                        "SELECT scope FROM sources WHERE project=? AND source=?", (project, s_name)
+                    ).fetchone()
+                    if s_row:
+                        scope = s_row["scope"]
+                        if scope == "restricted":
+                            risk_score = max(risk_score, 0.90)
+                        elif scope == "local-only":
+                            risk_score = max(risk_score, 0.40)
             except Exception:
                 pass
 
@@ -822,6 +820,17 @@ class PanelEngine:
                 fuse_path="panel_session",
                 fuse_t=t_session
             )
+
+    def reset_fuse_session(self, mission_id: str | None = None) -> dict[str, Any]:
+        """B2: Operator reactivation mechanism after containment intervention.
+        Allows human operator to clear STOP state and log reactivation to ledger.
+        """
+        with self._lock:
+            path = f"mission_{mission_id}" if mission_id else "panel_session"
+            self.fuse_sensor.reset(path)
+            self.fuse_sensor.reset("panel_session")
+            self._fuse_session_start = time.monotonic()
+            return {"status": "ok", "message": "Fusible temporal restablecido por autorizacin de operador."}
 
     def reingest_source(self, project: str, source: str) -> dict[str, Any]:
         with self._lock:

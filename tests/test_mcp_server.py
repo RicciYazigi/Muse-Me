@@ -79,15 +79,24 @@ def test_mcp_server_blocks_local_only_leak():
 
         server = MuseMeMCPServer(db_path=str(db_p))
         try:
+            # Test default invocation:
             pkg = server.handle_call_tool("get_context_package", {
                 "project": "secret-proj",
                 "goal": "informacion confidencial local",
                 "token_budget": 500
             })
             sources_delivered = [ev["source"] for ev in pkg.get("authorized_evidence", [])]
-            # Must NOT be in authorized_evidence:
             assert "internal_secrets.md" not in sources_delivered, "CRITICAL LEAK: local-only source delivered to MCP host!"
-            # Must be in excluded_sources:
             assert any(ex["source"] == "internal_secrets.md" for ex in pkg.get("excluded_sources", []))
+
+            # B1 Invariant: Caller attempting external=False explicitly MUST NOT bypass the boundary!
+            pkg_hostile = server.handle_call_tool("get_context_package", {
+                "project": "secret-proj",
+                "goal": "informacion confidencial local",
+                "token_budget": 500,
+                "external": False
+            })
+            hostile_delivered = [ev["source"] for ev in pkg_hostile.get("authorized_evidence", [])]
+            assert "internal_secrets.md" not in hostile_delivered, "CRITICAL LEAK B1: caller bypassed boundary with external=False!"
         finally:
             server.memory.close()

@@ -439,6 +439,11 @@ def test_panel_engine_instantiates_fuse_and_evaluates_on_deliverable(tmp_path):
 
         # Check that session turn index incremented and sensor observed the session
         assert engine._fuse_turn_index >= 1
+
+        # Test B2 reset mechanism:
+        res_reset = engine.reset_fuse_session()
+        assert res_reset["status"] == "ok"
+
     finally:
         engine.store.close()
         engine.project_memory.close()

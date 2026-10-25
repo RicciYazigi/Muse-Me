@@ -190,8 +190,9 @@ class MuseMeMCPServer:
             goal = arguments.get("goal", "")
             proj = arguments.get("project", "demo-latam")
             budget = arguments.get("token_budget", 1500)
-            ext = arguments.get("external", True)
-            return self.get_context_package(goal=goal, project=proj, token_budget=budget, external=ext)
+            # B1 Governance Invariant: The MCP consumer cannot lower the external security boundary.
+            # External is unconditionally enforced to True regardless of caller input.
+            return self.get_context_package(goal=goal, project=proj, token_budget=budget, external=True)
         elif name == "propose_insertion":
             mid = arguments.get("mission_id", "")
             title = arguments.get("title", "Propuesta Contextual")
