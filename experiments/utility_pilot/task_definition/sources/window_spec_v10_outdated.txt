@@ -1,0 +1,8 @@
+=== ARCHIVO HISTÓRICO DE DESCUENTOS (OBSOLETO / DEPRECATED) ===
+Documento: Manual Promocional v1.0 (Año 2024 - OBSOLETO)
+Aviso: Este esquema fue reemplazado en 2026 y NO debe utilizarse en producción.
+
+Regla antigua v1.0:
+- El cupón PROMO_REGIONAL aplicaba un 5% parejo a todas las regiones.
+- No existía tope de descuento.
+- Se calculaba usando tipos flotantes float() estándar.

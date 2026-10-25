@@ -1,0 +1,54 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Caches and test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.test*
+validation_tests.txt
+validation/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Secrets and environment variables
+.env
+.env.*
+!.env.example
+
+# Local storage and runtime databases
+data/
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+project_memory.sqlite*
+events.sqlite*
+
+# Local runs, backups, and logs
+runs/
+.local/
+*.log
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+BITACORA_HISTORIAL_CONVERSACION.md

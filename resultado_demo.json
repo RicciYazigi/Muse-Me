@@ -1,0 +1,1504 @@
+{
+  "format_version": 2,
+  "mode": "simulated",
+  "meta_calls": 0,
+  "episodes": [
+    {
+      "episode": "ep-01",
+      "apps": [
+        "Chrome Docs",
+        "VS Code"
+      ],
+      "relation_status": "inferred",
+      "events": [
+        "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730",
+        "evt-72d31645d6034c958fbb2d06340c4a6e",
+        "evt-a245563d552a45fc89339b4d923d75ce"
+      ]
+    },
+    {
+      "episode": "ep-02",
+      "apps": [
+        "Notas privadas"
+      ],
+      "relation_status": "inferred",
+      "events": [
+        "evt-7e8fce1abec34502ab99c9d26e6851ff"
+      ]
+    },
+    {
+      "episode": "ep-03",
+      "apps": [
+        "Chat externo"
+      ],
+      "relation_status": "inferred",
+      "events": [
+        "evt-4f4b0ac1f2434ce19803609552d319ac"
+      ]
+    }
+  ],
+  "activity": [
+    {
+      "kind": "window_focus",
+      "application": "VS Code",
+      "content": "api.py FastAPI endpoint",
+      "epistemic_status": "observed",
+      "permission_scope": "local-only",
+      "source_type": "simulated",
+      "ts": 1000.0,
+      "event_id": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730"
+    },
+    {
+      "kind": "content_observed",
+      "application": "VS Code",
+      "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+      "epistemic_status": "observed",
+      "permission_scope": "may_transfer",
+      "source_type": "simulated",
+      "ts": 1005.0,
+      "event_id": "evt-72d31645d6034c958fbb2d06340c4a6e"
+    },
+    {
+      "kind": "content_observed",
+      "application": "Chrome Docs",
+      "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+      "epistemic_status": "observed",
+      "permission_scope": "may_transfer",
+      "source_type": "simulated",
+      "ts": 1100.0,
+      "event_id": "evt-a245563d552a45fc89339b4d923d75ce"
+    },
+    {
+      "kind": "content_observed",
+      "application": "Notas privadas",
+      "content": "Credencial interna del despliegue y notas personales del proyecto",
+      "epistemic_status": "observed",
+      "permission_scope": "restricted",
+      "source_type": "simulated",
+      "ts": 1200.0,
+      "event_id": "evt-7e8fce1abec34502ab99c9d26e6851ff"
+    },
+    {
+      "kind": "window_focus",
+      "application": "Chat externo",
+      "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+      "epistemic_status": "observed",
+      "permission_scope": "may_transfer",
+      "source_type": "simulated",
+      "ts": 1300.0,
+      "event_id": "evt-4f4b0ac1f2434ce19803609552d319ac"
+    }
+  ],
+  "package": {
+    "action": "reply_with_muse",
+    "target_application": "Chat externo",
+    "target_is_external": true,
+    "current_context": {
+      "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+      "app": "Chat externo",
+      "status": "observed",
+      "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?"
+    },
+    "additional_context": [
+      {
+        "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+        "app": "VS Code",
+        "status": "observed",
+        "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+        "shared_terms": [
+          "422",
+          "devuelve",
+          "fastapi"
+        ]
+      },
+      {
+        "source": "evt-a245563d552a45fc89339b4d923d75ce",
+        "app": "Chrome Docs",
+        "status": "observed",
+        "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+        "shared_terms": [
+          "fastapi"
+        ]
+      }
+    ],
+    "excluded_context": [
+      {
+        "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730",
+        "app": "VS Code",
+        "reason": "local_only_not_authorized_for_external_target"
+      },
+      {
+        "source": "evt-7e8fce1abec34502ab99c9d26e6851ff",
+        "app": "Notas privadas",
+        "reason": "restricted_no_transfer"
+      }
+    ],
+    "requires_user_approval": true
+  },
+  "outbound_payload": {
+    "action": "reply_with_muse",
+    "current_context": {
+      "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+      "status": "observed",
+      "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?"
+    },
+    "additional_context": [
+      {
+        "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+        "status": "observed",
+        "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py"
+      },
+      {
+        "source": "evt-a245563d552a45fc89339b4d923d75ce",
+        "status": "observed",
+        "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+      }
+    ]
+  },
+  "invoke": {
+    "status": "inserted_not_sent",
+    "draft": {
+      "draft_id": "draft-eeedd777a70c44ee98ba6eb65ff81472",
+      "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+      "citations": [
+        "evt-72d31645d6034c958fbb2d06340c4a6e",
+        "evt-a245563d552a45fc89339b4d923d75ce"
+      ],
+      "provided_sources": [
+        "evt-4f4b0ac1f2434ce19803609552d319ac",
+        "evt-72d31645d6034c958fbb2d06340c4a6e",
+        "evt-a245563d552a45fc89339b4d923d75ce"
+      ],
+      "provider": "local-stub (NO es Muse: proveedor determinista)",
+      "payload_hash": "4a26b0d83175599ba14cfb9aeed85204f800b3f75b37af3dadd6fec9c77fefd5",
+      "package": {
+        "action": "reply_with_muse",
+        "target_application": "Chat externo",
+        "target_is_external": true,
+        "current_context": {
+          "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+          "app": "Chat externo",
+          "status": "observed",
+          "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?"
+        },
+        "additional_context": [
+          {
+            "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+            "app": "VS Code",
+            "status": "observed",
+            "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+            "shared_terms": [
+              "422",
+              "devuelve",
+              "fastapi"
+            ]
+          },
+          {
+            "source": "evt-a245563d552a45fc89339b4d923d75ce",
+            "app": "Chrome Docs",
+            "status": "observed",
+            "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+            "shared_terms": [
+              "fastapi"
+            ]
+          }
+        ],
+        "excluded_context": [
+          {
+            "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730",
+            "app": "VS Code",
+            "reason": "local_only_not_authorized_for_external_target"
+          },
+          {
+            "source": "evt-7e8fce1abec34502ab99c9d26e6851ff",
+            "app": "Notas privadas",
+            "reason": "restricted_no_transfer"
+          }
+        ],
+        "requires_user_approval": true
+      },
+      "target_id": "surface-828b374ff448408281f48e5e0a1ac78d",
+      "target_application": "Chat externo",
+      "target_is_external": true
+    },
+    "surface": "Chat externo"
+  },
+  "inserted": [
+    "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+  ],
+  "ab": {
+    "fixture_only": true,
+    "per_turn_stop": null,
+    "fuse_stop": 2,
+    "attempt_status": "blocked",
+    "blocked_insertions": 0
+  },
+  "persistence": {
+    "before": 10,
+    "after": 15,
+    "reopened_ok": true
+  },
+  "chain_valid": true,
+  "chain": [
+    {
+      "seq": 1,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "api.py FastAPI endpoint",
+          "epistemic_status": "observed",
+          "event_id": "evt-eb2b2dfddc4a4c67ba8576af80848c96",
+          "kind": "window_focus",
+          "permission_scope": "local-only",
+          "source_type": "simulated",
+          "ts": 1000.0
+        }
+      },
+      "prev_hash": "GENESIS",
+      "hash": "32a218669d82a5d96e9a81d402c47dc4de56ee9b86f5b308c00fa058bf21d116"
+    },
+    {
+      "seq": 2,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+          "epistemic_status": "observed",
+          "event_id": "evt-9034a2b7c65140d2834870d83b2439b9",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1005.0
+        }
+      },
+      "prev_hash": "32a218669d82a5d96e9a81d402c47dc4de56ee9b86f5b308c00fa058bf21d116",
+      "hash": "50bc3ed97b3bae68d720a9bc60a8f85a792f072014aadd70e7a8017176e43c94"
+    },
+    {
+      "seq": 3,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chrome Docs",
+          "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+          "epistemic_status": "observed",
+          "event_id": "evt-870d8708e30541e482e0689603820c88",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1100.0
+        }
+      },
+      "prev_hash": "50bc3ed97b3bae68d720a9bc60a8f85a792f072014aadd70e7a8017176e43c94",
+      "hash": "a4969da9a39b76d5db4558b3783c2f2502d1fdd8ddb1826613948e20355d3b77"
+    },
+    {
+      "seq": 4,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Notas privadas",
+          "content": "Credencial interna del despliegue y notas personales del proyecto",
+          "epistemic_status": "observed",
+          "event_id": "evt-8edc956c5c0d4dd9b49ea5e5fcf1b45e",
+          "kind": "content_observed",
+          "permission_scope": "restricted",
+          "source_type": "simulated",
+          "ts": 1200.0
+        }
+      },
+      "prev_hash": "a4969da9a39b76d5db4558b3783c2f2502d1fdd8ddb1826613948e20355d3b77",
+      "hash": "f7022a34c4f19530a61381ce6c875e27bd50bce32d2d458cc4dd9a256618ee3f"
+    },
+    {
+      "seq": 5,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chat externo",
+          "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+          "epistemic_status": "observed",
+          "event_id": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+          "kind": "window_focus",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1300.0
+        }
+      },
+      "prev_hash": "f7022a34c4f19530a61381ce6c875e27bd50bce32d2d458cc4dd9a256618ee3f",
+      "hash": "5cab46f1c6665f7a94cf5e2b994981e0693868ad00d36326154f6398e5e11e4b"
+    },
+    {
+      "seq": 6,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-870d8708e30541e482e0689603820c88",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-eb2b2dfddc4a4c67ba8576af80848c96"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-8edc956c5c0d4dd9b49ea5e5fcf1b45e"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-870d8708e30541e482e0689603820c88",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-e0e9b11db70448f7bcac3e6d2fac307b"
+      },
+      "prev_hash": "5cab46f1c6665f7a94cf5e2b994981e0693868ad00d36326154f6398e5e11e4b",
+      "hash": "b3d824cf602c342a1481a311168a3cd288d643c97d2a141fcb5f594989ef734e"
+    },
+    {
+      "seq": 7,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-9034a2b7c65140d2834870d83b2439b9",
+            "evt-870d8708e30541e482e0689603820c88"
+          ],
+          "draft_id": "draft-7ea011d3cebe4a3580346bbd78ee0163",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-870d8708e30541e482e0689603820c88",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-eb2b2dfddc4a4c67ba8576af80848c96"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-8edc956c5c0d4dd9b49ea5e5fcf1b45e"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "9df43f3269efd6f443585ead648de9014762db811cc7ca3a8132cfc20fa81ce6",
+          "provided_sources": [
+            "evt-870d8708e30541e482e0689603820c88",
+            "evt-9034a2b7c65140d2834870d83b2439b9",
+            "evt-d8deb9cc2cb94639a23434fd6cb26dfc"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-e0e9b11db70448f7bcac3e6d2fac307b",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "b3d824cf602c342a1481a311168a3cd288d643c97d2a141fcb5f594989ef734e",
+      "hash": "2292c49096c11e29e0785944ce3c1b2ebb2f751d913e7754b3a1567923de6282"
+    },
+    {
+      "seq": 8,
+      "kind": "insertion_approved",
+      "payload": {
+        "actor": "demo-script (aprobación simulada)",
+        "draft_hash": "59e19e148e4654727ad5b2a97206a490b652a591f6a472407f770bbecdb08d37",
+        "draft_id": "draft-7ea011d3cebe4a3580346bbd78ee0163",
+        "target_id": "surface-e0e9b11db70448f7bcac3e6d2fac307b"
+      },
+      "prev_hash": "2292c49096c11e29e0785944ce3c1b2ebb2f751d913e7754b3a1567923de6282",
+      "hash": "202e913645f1c5aef141763abaebb94c953b7ee3ab83531041ac9cc40f89d9df"
+    },
+    {
+      "seq": 9,
+      "kind": "inserted_confirmed",
+      "payload": {
+        "draft_hash": "59e19e148e4654727ad5b2a97206a490b652a591f6a472407f770bbecdb08d37",
+        "draft_id": "draft-7ea011d3cebe4a3580346bbd78ee0163",
+        "sent": false,
+        "target_id": "surface-e0e9b11db70448f7bcac3e6d2fac307b"
+      },
+      "prev_hash": "202e913645f1c5aef141763abaebb94c953b7ee3ab83531041ac9cc40f89d9df",
+      "hash": "9f288d0b03a92284f34221420d0cf8ce2c07da1062e92d401a909da858387c47"
+    },
+    {
+      "seq": 10,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-870d8708e30541e482e0689603820c88",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-eb2b2dfddc4a4c67ba8576af80848c96"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-8edc956c5c0d4dd9b49ea5e5fcf1b45e"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-870d8708e30541e482e0689603820c88",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-0406f5b456584f67a771a191a8062e0a"
+      },
+      "prev_hash": "9f288d0b03a92284f34221420d0cf8ce2c07da1062e92d401a909da858387c47",
+      "hash": "82d82825da70561f7f15c6696917a0e5dd90522e53749f6317abfaaebd266960"
+    },
+    {
+      "seq": 11,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-9034a2b7c65140d2834870d83b2439b9",
+            "evt-870d8708e30541e482e0689603820c88"
+          ],
+          "draft_id": "draft-e43b47cdc4a04d2eaba2eec8c87336da",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-9034a2b7c65140d2834870d83b2439b9",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-870d8708e30541e482e0689603820c88",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-d8deb9cc2cb94639a23434fd6cb26dfc",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-eb2b2dfddc4a4c67ba8576af80848c96"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-8edc956c5c0d4dd9b49ea5e5fcf1b45e"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "9df43f3269efd6f443585ead648de9014762db811cc7ca3a8132cfc20fa81ce6",
+          "provided_sources": [
+            "evt-870d8708e30541e482e0689603820c88",
+            "evt-9034a2b7c65140d2834870d83b2439b9",
+            "evt-d8deb9cc2cb94639a23434fd6cb26dfc"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-0406f5b456584f67a771a191a8062e0a",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "82d82825da70561f7f15c6696917a0e5dd90522e53749f6317abfaaebd266960",
+      "hash": "7da14f8d8a344ddc1a1aa53fe601e31510e400426cc5d78059af6eb29774a8d1"
+    },
+    {
+      "seq": 12,
+      "kind": "blocked_sensor",
+      "payload": {
+        "phase": "insert",
+        "session": "session"
+      },
+      "prev_hash": "7da14f8d8a344ddc1a1aa53fe601e31510e400426cc5d78059af6eb29774a8d1",
+      "hash": "84b3b707fce5fcfbfebe7db519886a044d4dbb8b7d61d3ef95f7ee1f03fb9e05"
+    },
+    {
+      "seq": 13,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "api.py FastAPI endpoint",
+          "epistemic_status": "observed",
+          "event_id": "evt-4952845f781b4472a8d94a3238823a73",
+          "kind": "window_focus",
+          "permission_scope": "local-only",
+          "source_type": "simulated",
+          "ts": 1000.0
+        }
+      },
+      "prev_hash": "84b3b707fce5fcfbfebe7db519886a044d4dbb8b7d61d3ef95f7ee1f03fb9e05",
+      "hash": "5472bbac24c09a67526ae641fc8610a31fb012a2a14202214fc2a8f502d4882e"
+    },
+    {
+      "seq": 14,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+          "epistemic_status": "observed",
+          "event_id": "evt-161e9f687b03421f9c3088655f11228d",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1005.0
+        }
+      },
+      "prev_hash": "5472bbac24c09a67526ae641fc8610a31fb012a2a14202214fc2a8f502d4882e",
+      "hash": "d888da180269d02041f78db457a6b492802676a841ffb7a0f46e052ff77a60d3"
+    },
+    {
+      "seq": 15,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chrome Docs",
+          "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+          "epistemic_status": "observed",
+          "event_id": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1100.0
+        }
+      },
+      "prev_hash": "d888da180269d02041f78db457a6b492802676a841ffb7a0f46e052ff77a60d3",
+      "hash": "f9036e55f9ce4977c4ee1bef8cb8beac6bf55edfa1d0e46f35bed0b06d2955b8"
+    },
+    {
+      "seq": 16,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Notas privadas",
+          "content": "Credencial interna del despliegue y notas personales del proyecto",
+          "epistemic_status": "observed",
+          "event_id": "evt-88e5baa3ab434137acd24ec133162cd6",
+          "kind": "content_observed",
+          "permission_scope": "restricted",
+          "source_type": "simulated",
+          "ts": 1200.0
+        }
+      },
+      "prev_hash": "f9036e55f9ce4977c4ee1bef8cb8beac6bf55edfa1d0e46f35bed0b06d2955b8",
+      "hash": "031fd708eb92096eca8ced85ec68553965e1aa2a01ecd1e075fea68f74ea9dee"
+    },
+    {
+      "seq": 17,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chat externo",
+          "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+          "epistemic_status": "observed",
+          "event_id": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+          "kind": "window_focus",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1300.0
+        }
+      },
+      "prev_hash": "031fd708eb92096eca8ced85ec68553965e1aa2a01ecd1e075fea68f74ea9dee",
+      "hash": "b0d0ba981bd22e2e38056ddba18592824fb3d2d7799f61f2ce462194b3496f80"
+    },
+    {
+      "seq": 18,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-161e9f687b03421f9c3088655f11228d",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-4952845f781b4472a8d94a3238823a73"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-88e5baa3ab434137acd24ec133162cd6"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-161e9f687b03421f9c3088655f11228d",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-9954013d01b645eaa447955ea1849a9f"
+      },
+      "prev_hash": "b0d0ba981bd22e2e38056ddba18592824fb3d2d7799f61f2ce462194b3496f80",
+      "hash": "3751541c4766ad5819b44096af1d85c6f34dd8778e8a76b4476c6bc27ab0a8cc"
+    },
+    {
+      "seq": 19,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-161e9f687b03421f9c3088655f11228d",
+            "evt-0ec7a09f9897422f8d1bb8ee2870582b"
+          ],
+          "draft_id": "draft-66385a34153948b4b70276ab4251e04f",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-161e9f687b03421f9c3088655f11228d",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-4952845f781b4472a8d94a3238823a73"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-88e5baa3ab434137acd24ec133162cd6"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "5690f8263c68ba8b9b4029237e1bedd2ea9bce925b29989cffe701e0273aea1f",
+          "provided_sources": [
+            "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+            "evt-161e9f687b03421f9c3088655f11228d",
+            "evt-4b8b7eb8678d45538defb025d9dfd56c"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-9954013d01b645eaa447955ea1849a9f",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "3751541c4766ad5819b44096af1d85c6f34dd8778e8a76b4476c6bc27ab0a8cc",
+      "hash": "6aa43e0a96253611befaff337702d06203f7cf1a910a5199c8fa2e65442841f4"
+    },
+    {
+      "seq": 20,
+      "kind": "insertion_approved",
+      "payload": {
+        "actor": "demo-script (aprobación simulada)",
+        "draft_hash": "fb771f83fb4eb8d67a7139508fa56de887255e64f844ca3fc3a558d5aae775bd",
+        "draft_id": "draft-66385a34153948b4b70276ab4251e04f",
+        "target_id": "surface-9954013d01b645eaa447955ea1849a9f"
+      },
+      "prev_hash": "6aa43e0a96253611befaff337702d06203f7cf1a910a5199c8fa2e65442841f4",
+      "hash": "7f0056d3e17dd4ab22464b50650f3423d1a57c01812d8ce1f60f2c094e85f2a7"
+    },
+    {
+      "seq": 21,
+      "kind": "inserted_confirmed",
+      "payload": {
+        "draft_hash": "fb771f83fb4eb8d67a7139508fa56de887255e64f844ca3fc3a558d5aae775bd",
+        "draft_id": "draft-66385a34153948b4b70276ab4251e04f",
+        "sent": false,
+        "target_id": "surface-9954013d01b645eaa447955ea1849a9f"
+      },
+      "prev_hash": "7f0056d3e17dd4ab22464b50650f3423d1a57c01812d8ce1f60f2c094e85f2a7",
+      "hash": "243125e4555dc033da0f42d41bc6cb4bb15b6a646870ef9dfee4f92e47e2be84"
+    },
+    {
+      "seq": 22,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-161e9f687b03421f9c3088655f11228d",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-4952845f781b4472a8d94a3238823a73"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-88e5baa3ab434137acd24ec133162cd6"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-161e9f687b03421f9c3088655f11228d",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-ace22e5cd6244d8e9b5073cb56bd10de"
+      },
+      "prev_hash": "243125e4555dc033da0f42d41bc6cb4bb15b6a646870ef9dfee4f92e47e2be84",
+      "hash": "510f64c44cfd6f15d1a9d6351907222d81ce10283b782e2da90886e54b913460"
+    },
+    {
+      "seq": 23,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-161e9f687b03421f9c3088655f11228d",
+            "evt-0ec7a09f9897422f8d1bb8ee2870582b"
+          ],
+          "draft_id": "draft-2b72c0616afc488c81b1968cd0eba9b3",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-161e9f687b03421f9c3088655f11228d",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-4b8b7eb8678d45538defb025d9dfd56c",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-4952845f781b4472a8d94a3238823a73"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-88e5baa3ab434137acd24ec133162cd6"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "5690f8263c68ba8b9b4029237e1bedd2ea9bce925b29989cffe701e0273aea1f",
+          "provided_sources": [
+            "evt-0ec7a09f9897422f8d1bb8ee2870582b",
+            "evt-161e9f687b03421f9c3088655f11228d",
+            "evt-4b8b7eb8678d45538defb025d9dfd56c"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-ace22e5cd6244d8e9b5073cb56bd10de",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "510f64c44cfd6f15d1a9d6351907222d81ce10283b782e2da90886e54b913460",
+      "hash": "bcba3336c2e7470d4b6b721a89ecf8727d01843b59e55eec350b372d40836bd7"
+    },
+    {
+      "seq": 24,
+      "kind": "blocked_sensor",
+      "payload": {
+        "phase": "insert",
+        "session": "session"
+      },
+      "prev_hash": "bcba3336c2e7470d4b6b721a89ecf8727d01843b59e55eec350b372d40836bd7",
+      "hash": "f3aa8921156f096068655ce648e2347dfca7e04ec9efb398f974e8c69e848930"
+    },
+    {
+      "seq": 25,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "api.py FastAPI endpoint",
+          "epistemic_status": "observed",
+          "event_id": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730",
+          "kind": "window_focus",
+          "permission_scope": "local-only",
+          "source_type": "simulated",
+          "ts": 1000.0
+        }
+      },
+      "prev_hash": "f3aa8921156f096068655ce648e2347dfca7e04ec9efb398f974e8c69e848930",
+      "hash": "7644ce0b3f412b76ab02ab434509fab74cf8b89adbb90015d057ab2497938e62"
+    },
+    {
+      "seq": 26,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "VS Code",
+          "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+          "epistemic_status": "observed",
+          "event_id": "evt-72d31645d6034c958fbb2d06340c4a6e",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1005.0
+        }
+      },
+      "prev_hash": "7644ce0b3f412b76ab02ab434509fab74cf8b89adbb90015d057ab2497938e62",
+      "hash": "8ff9e04113d463c051721f3334b505b1c3a73994e847e116287ed32d4ac9c6cb"
+    },
+    {
+      "seq": 27,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chrome Docs",
+          "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+          "epistemic_status": "observed",
+          "event_id": "evt-a245563d552a45fc89339b4d923d75ce",
+          "kind": "content_observed",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1100.0
+        }
+      },
+      "prev_hash": "8ff9e04113d463c051721f3334b505b1c3a73994e847e116287ed32d4ac9c6cb",
+      "hash": "2a9c1f3b86db86bd464255a35ac6267c55236447509e49328d3c598af8808ee8"
+    },
+    {
+      "seq": 28,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Notas privadas",
+          "content": "Credencial interna del despliegue y notas personales del proyecto",
+          "epistemic_status": "observed",
+          "event_id": "evt-7e8fce1abec34502ab99c9d26e6851ff",
+          "kind": "content_observed",
+          "permission_scope": "restricted",
+          "source_type": "simulated",
+          "ts": 1200.0
+        }
+      },
+      "prev_hash": "2a9c1f3b86db86bd464255a35ac6267c55236447509e49328d3c598af8808ee8",
+      "hash": "e35eb0a62c19b9541db9bbea71bd8ccf5a1a2d2a39536e34e502af8811731477"
+    },
+    {
+      "seq": 29,
+      "kind": "observation_recorded",
+      "payload": {
+        "observation": {
+          "application": "Chat externo",
+          "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+          "epistemic_status": "observed",
+          "event_id": "evt-4f4b0ac1f2434ce19803609552d319ac",
+          "kind": "window_focus",
+          "permission_scope": "may_transfer",
+          "source_type": "simulated",
+          "ts": 1300.0
+        }
+      },
+      "prev_hash": "e35eb0a62c19b9541db9bbea71bd8ccf5a1a2d2a39536e34e502af8811731477",
+      "hash": "baf85a2570d4e5fbec28051a374be29d4e0623510e2904e36214e564b3236e22"
+    },
+    {
+      "seq": 30,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-a245563d552a45fc89339b4d923d75ce",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-7e8fce1abec34502ab99c9d26e6851ff"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-a245563d552a45fc89339b4d923d75ce",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-828b374ff448408281f48e5e0a1ac78d"
+      },
+      "prev_hash": "baf85a2570d4e5fbec28051a374be29d4e0623510e2904e36214e564b3236e22",
+      "hash": "1d45be9627c485d2f064f89633016576f67ec87c18967649cf71b784246d4295"
+    },
+    {
+      "seq": 31,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-72d31645d6034c958fbb2d06340c4a6e",
+            "evt-a245563d552a45fc89339b4d923d75ce"
+          ],
+          "draft_id": "draft-eeedd777a70c44ee98ba6eb65ff81472",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-a245563d552a45fc89339b4d923d75ce",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-7e8fce1abec34502ab99c9d26e6851ff"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "4a26b0d83175599ba14cfb9aeed85204f800b3f75b37af3dadd6fec9c77fefd5",
+          "provided_sources": [
+            "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "evt-72d31645d6034c958fbb2d06340c4a6e",
+            "evt-a245563d552a45fc89339b4d923d75ce"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-828b374ff448408281f48e5e0a1ac78d",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "1d45be9627c485d2f064f89633016576f67ec87c18967649cf71b784246d4295",
+      "hash": "27cdada9e4d74a34df21083a8d22ef325a6abb742eb1a1d28bf3c44aa4ff1f60"
+    },
+    {
+      "seq": 32,
+      "kind": "insertion_approved",
+      "payload": {
+        "actor": "demo-script (aprobación simulada)",
+        "draft_hash": "04c12d0b703eff82d2195de77bda777319cee18ddf44d3b2686414839de91e75",
+        "draft_id": "draft-eeedd777a70c44ee98ba6eb65ff81472",
+        "target_id": "surface-828b374ff448408281f48e5e0a1ac78d"
+      },
+      "prev_hash": "27cdada9e4d74a34df21083a8d22ef325a6abb742eb1a1d28bf3c44aa4ff1f60",
+      "hash": "7d6c92077a88ec453471834ca84dbc0afe06f1756bd9afc9dea322bb96127fc6"
+    },
+    {
+      "seq": 33,
+      "kind": "inserted_confirmed",
+      "payload": {
+        "draft_hash": "04c12d0b703eff82d2195de77bda777319cee18ddf44d3b2686414839de91e75",
+        "draft_id": "draft-eeedd777a70c44ee98ba6eb65ff81472",
+        "sent": false,
+        "target_id": "surface-828b374ff448408281f48e5e0a1ac78d"
+      },
+      "prev_hash": "7d6c92077a88ec453471834ca84dbc0afe06f1756bd9afc9dea322bb96127fc6",
+      "hash": "bec2c6a6a4c91fbfc67db8350c71f16dfbd762049aa849161d5dd43fad298eed"
+    },
+    {
+      "seq": 34,
+      "kind": "proposed",
+      "payload": {
+        "package": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "app": "VS Code",
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "shared_terms": [
+                "422",
+                "devuelve",
+                "fastapi"
+              ],
+              "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+              "status": "observed"
+            },
+            {
+              "app": "Chrome Docs",
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "shared_terms": [
+                "fastapi"
+              ],
+              "source": "evt-a245563d552a45fc89339b4d923d75ce",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "app": "Chat externo",
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "status": "observed"
+          },
+          "excluded_context": [
+            {
+              "app": "VS Code",
+              "reason": "local_only_not_authorized_for_external_target",
+              "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730"
+            },
+            {
+              "app": "Notas privadas",
+              "reason": "restricted_no_transfer",
+              "source": "evt-7e8fce1abec34502ab99c9d26e6851ff"
+            }
+          ],
+          "requires_user_approval": true,
+          "target_application": "Chat externo",
+          "target_is_external": true
+        },
+        "payload": {
+          "action": "reply_with_muse",
+          "additional_context": [
+            {
+              "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+              "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+              "status": "observed"
+            },
+            {
+              "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+              "source": "evt-a245563d552a45fc89339b4d923d75ce",
+              "status": "observed"
+            }
+          ],
+          "current_context": {
+            "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+            "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "status": "observed"
+          }
+        },
+        "provider_id": "local-stub (NO es Muse: proveedor determinista)",
+        "target_id": "surface-83b0a82f9afd4402b9b2dd682461860b"
+      },
+      "prev_hash": "bec2c6a6a4c91fbfc67db8350c71f16dfbd762049aa849161d5dd43fad298eed",
+      "hash": "45fad65979457d43847d97eb72b9f6d4d24bb35de3249143c8c0b37ddf17448e"
+    },
+    {
+      "seq": 35,
+      "kind": "draft_ready",
+      "payload": {
+        "draft": {
+          "citations": [
+            "evt-72d31645d6034c958fbb2d06340c4a6e",
+            "evt-a245563d552a45fc89339b4d923d75ce"
+          ],
+          "draft_id": "draft-cd4d8b84ca64440baee72bebb2560385",
+          "package": {
+            "action": "reply_with_muse",
+            "additional_context": [
+              {
+                "app": "VS Code",
+                "content": "FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py",
+                "shared_terms": [
+                  "422",
+                  "devuelve",
+                  "fastapi"
+                ],
+                "source": "evt-72d31645d6034c958fbb2d06340c4a6e",
+                "status": "observed"
+              },
+              {
+                "app": "Chrome Docs",
+                "content": "La documentación de FastAPI indica validar el tipo antes de construir el esquema",
+                "shared_terms": [
+                  "fastapi"
+                ],
+                "source": "evt-a245563d552a45fc89339b4d923d75ce",
+                "status": "observed"
+              }
+            ],
+            "current_context": {
+              "app": "Chat externo",
+              "content": "¿Por qué FastAPI devuelve 422 en mi endpoint?",
+              "source": "evt-4f4b0ac1f2434ce19803609552d319ac",
+              "status": "observed"
+            },
+            "excluded_context": [
+              {
+                "app": "VS Code",
+                "reason": "local_only_not_authorized_for_external_target",
+                "source": "evt-6fdfd3a2c4ff4efa83a8cc1e2c3c1730"
+              },
+              {
+                "app": "Notas privadas",
+                "reason": "restricted_no_transfer",
+                "source": "evt-7e8fce1abec34502ab99c9d26e6851ff"
+              }
+            ],
+            "requires_user_approval": true,
+            "target_application": "Chat externo",
+            "target_is_external": true
+          },
+          "payload_hash": "4a26b0d83175599ba14cfb9aeed85204f800b3f75b37af3dadd6fec9c77fefd5",
+          "provided_sources": [
+            "evt-4f4b0ac1f2434ce19803609552d319ac",
+            "evt-72d31645d6034c958fbb2d06340c4a6e",
+            "evt-a245563d552a45fc89339b4d923d75ce"
+          ],
+          "provider": "local-stub (NO es Muse: proveedor determinista)",
+          "target_application": "Chat externo",
+          "target_id": "surface-83b0a82f9afd4402b9b2dd682461860b",
+          "target_is_external": true,
+          "text": "Borrador del stub: FastAPI devuelve 422 porque el esquema Pydantic espera entero y recibe cadena en api.py; La documentación de FastAPI indica validar el tipo antes de construir el esquema"
+        }
+      },
+      "prev_hash": "45fad65979457d43847d97eb72b9f6d4d24bb35de3249143c8c0b37ddf17448e",
+      "hash": "b26c4eaeabf2c950f4906bb6293e0729fc722a1dd5e9029594da36ed23a8349c"
+    },
+    {
+      "seq": 36,
+      "kind": "blocked_sensor",
+      "payload": {
+        "phase": "insert",
+        "session": "session"
+      },
+      "prev_hash": "b26c4eaeabf2c950f4906bb6293e0729fc722a1dd5e9029594da36ed23a8349c",
+      "hash": "ce06b6de27479d54d16f8233b8da22b3c216ac0eeed7ee7c1eda8e47775463be"
+    }
+  ]
+}

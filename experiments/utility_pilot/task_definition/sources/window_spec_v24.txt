@@ -1,0 +1,10 @@
+=== DOCUMENTACIÓN TÉCNICA Y ESPECIFICACIÓN DE PRODUCTO ===
+Documento: Especificación de Descuentos y Promociones Regionales v2.4 (Vigente a partir de Q3-2026)
+Estado: Aprobado por Finanzas y Producto
+
+Regla de Negocio para LATAM:
+1. Identificador de Cupón: "PROMO_REGIONAL"
+2. Ámbito geográfico: Aplica exclusivamente cuando order["region"] == "LATAM". Para otras regiones, discount_amount es Decimal("0.00").
+3. Porcentaje de descuento: 15% (Decimal("0.15")) sobre el subtotal base antes de impuestos.
+4. Límite de Descuento (Cap): Si el subtotal de la orden supera los 100.00 USD (subtotal > Decimal("100.00")), el descuento máximo aplicable tiene un tope de 25.00 USD (Decimal("25.00")).
+5. Precisión y tipos: Todos los cálculos monetarios deben realizarse utilizando objetos `decimal.Decimal` con redondeo `ROUND_HALF_UP` a 2 decimales para evitar errores de precisión de punto flotante.

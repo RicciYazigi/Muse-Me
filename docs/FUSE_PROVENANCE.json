@@ -1,0 +1,27 @@
+[
+  {
+    "File": "__init__.py",
+    "Source": "C:\\Users\\USER\\Documents\\fusegate-Meta Version\\src\\fusible\\__init__.py",
+    "SHA256": "ADCE85EABA8828A4EE758030284D8520A6295F350ED5474A9C078C8A0E2A0C10"
+  },
+  {
+    "File": "calibration.py",
+    "Source": "C:\\Users\\USER\\Documents\\fusegate-Meta Version\\src\\fusible\\calibration.py",
+    "SHA256": "594DBCD10366E98D137043187D03C035A29A49CC8BFB5128B4B4CBF4D229192D"
+  },
+  {
+    "File": "fuse.py",
+    "Source": "C:\\Users\\USER\\Documents\\fusegate-Meta Version\\src\\fusible\\fuse.py",
+    "SHA256": "F7ED26BEA5B7081C58635ACD9946CDD1277CE63755C25909C6360222D0BA4F60"
+  },
+  {
+    "File": "recorder.py",
+    "Source": "C:\\Users\\USER\\Documents\\fusegate-Meta Version\\src\\fusible\\recorder.py",
+    "SHA256": "348073589B503D863CB0FE190A1535480C68946994F73018B22304CEA0EAF446"
+  },
+  {
+    "File": "statistics.py",
+    "Source": "C:\\Users\\USER\\Documents\\fusegate-Meta Version\\src\\fusible\\statistics.py",
+    "SHA256": "212F6EAABBDC4608B02D0427732F13EA034C13635748D405A52168AAD682569B"
+  }
+]

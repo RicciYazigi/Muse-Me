@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="session-token" content="__SESSION_TOKEN__">
+  <title>Muse Environment · Panel Local de Revisión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f15;
+      --card-bg: rgba(18, 25, 38, 0.75);
+      --card-border: #233144;
+      --card-border-glow: rgba(79, 142, 247, 0.25);
+      --text: #e2e8f0;
+      --text-muted: #8b9bb4;
+      --accent-blue: #3b82f6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.35);
+      --accent-green: #10b981;
+      --accent-green-glow: rgba(16, 185, 129, 0.3);
+      --accent-amber: #f59e0b;
+      --accent-amber-glow: rgba(245, 158, 11, 0.25);
+      --accent-red: #ef4444;
+      --accent-red-glow: rgba(239, 68, 68, 0.3);
+      --accent-purple: #8b5cf6;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 15%, #141c2b 0%, #080c11 100%);
+      color: var(--text);
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-titles h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-titles p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .badge-success .badge-dot {
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .badge-danger .badge-dot {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    .badge-neutral {
+      background: rgba(139, 155, 180, 0.15);
+      border-color: rgba(139, 155, 180, 0.3);
+      color: #cbd5e1;
+    }
+
+    /* Switch toggle */
+    .switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--card-border);
+    }
+
+    .switch-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #334155;
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--accent-blue);
+      box-shadow: 0 0 10px var(--accent-blue-glow);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Grid Layout */
+    .grid-workflow {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+
+    .col-4 {
+      grid-column: span 4;
+    }
+
+    .col-6 {
+      grid-column: span 6;
+    }
+
+    .col-8 {
+      grid-column: span 8;
+    }
+
+    .col-12 {
+      grid-column: span 12;
+    }
+
+    @media (max-width: 1100px) {
+
+      .col-4,
+      .col-6,
+      .col-8 {
+        grid-column: span 12;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--card-border-glow);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Surfaces Table / List */
+    .surface-item {
+      background: rgba(11, 15, 21, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .surface-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .surface-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #93c5fd;
+    }
+
+    .surface-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .surface-body textarea {
+      width: 100%;
+      height: 52px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #cbd5e1;
+      padding: 6px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+
+    .surface-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      box-shadow: 0 2px 10px var(--accent-blue-glow);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+      box-shadow: 0 2px 10px var(--accent-green-glow);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #10b981, #059669);
+      transform: translateY(-1px);
+    }
+
+    .btn-amber {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: white;
+      box-shadow: 0 2px 10px var(--accent-amber-glow);
+    }
+
+    .btn-amber:hover {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      box-shadow: 0 2px 10px var(--accent-red-glow);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Content stream / logs */
+    .stream-box {
+      background: #090d14;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 240px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .stream-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stream-item:last-child {
+      border-bottom: none;
+    }
+
+    .stream-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .tag-sel {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    .tag-excl {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .tag-prov {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    /* Code & Draft review */
+    .draft-box {
+      background: #0d131f;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #94a3b8;
+      white-space: pre-wrap;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: var(--text-muted);
+    }
+
+    .info-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #cbd5e1;
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert-banner-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    /* Toast */
+    #toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+    }
+
+    #toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-titles">
+        <h1>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          Muse Environment · Panel Local de Revisión
+        </h1>
+        <p>Control operativo local: compuertas explícitas, observación de solo lectura con no captura, borrador
+          auditable e inserción Win32.</p>
+      </div>
+      <div class="header-badges">
+        <div class="switch-wrap">
+          <span class="switch-label">Captura Windows (Opt-In):</span>
+          <label class="switch">
+            <input type="checkbox" id="opt-in-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="badge-capture-status" class="badge badge-neutral">
+          <span class="badge-dot"></span>
+          <span id="text-capture-status">Captura en vivo: INACTIVA</span>
+        </div>
+        <div id="badge-chain-status" class="badge badge-success">
+          <span class="badge-dot"></span>
+          <span>Cadena Criptográfica: Válida</span>
+        </div>
+        <button id="btn-refresh-state" class="btn btn-ghost" title="Actualizar estado">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+          Refrescar
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid-workflow">
+
+      <!-- PASO 1: Superficies y Captura -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="step-num">1</span>
+            Superficies Autorizadas (Allowlist & Políticas)
+          </div>
+          <button id="btn-observe-surfaces" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            Observar Superficies
+          </button>
+        </div>
+        <div id="surfaces-container" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Cargado dinámicamente -->
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); border-top:1px solid var(--card-border); padding-top:8px;">
+          Garantía: la comprobación previa sin lectura rechaza cualquier HWND no autorizado antes de llamar a
+          <code>WM_GETTEXT</code> o <code>GetWindowTextW</code>.
+        </div>
+      </div>
+
+      <!-- PASO 2: Fuentes y Exclusiones (ContextBuilder) -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="step-num">2</span>
+            Fuentes Observadas, Exclusiones & Procedencia
+          </div>
+          <button id="btn-build-context" class="btn btn-ghost">
+            Construir Contexto
+          </button>
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Consulta Actual
+            (Foco de Destino):</label>
+          <input type="text" id="input-query" value="¿Por qué mi endpoint de FastAPI devuelve error 422?"
+            style="width:100%; background:#090d14; border:1px solid var(--card-border); border-radius:6px; color:#cbd5e1; padding:7px 10px; font-size:13px;">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#34d399; margin-bottom:6px;">Contexto Seleccionado</div>
+            <div id="box-selected-context" class="stream-box" style="height:120px;">
+              <span style="color:var(--text-muted);">Sin ejecutar ContextBuilder</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#f87171; margin-bottom:6px;">Exclusiones Explícitas</div>
+            <div id="box-excluded-context" class="stream-box" style="height:120px;">
+              <span style="color:var(--text-muted);">Sin ejecutar ContextBuilder</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:#60a5fa; margin-bottom:2px;">Registro de Procedencia en
+            SQLite (observation_provenance)</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">Historial auditado en reposo; no
+            implica captura activa en este momento.</div>
+          <div id="box-provenance-log" class="stream-box" style="height:110px;">
+            <span style="color:var(--text-muted);">Sin observaciones registradas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3: Compuerta 1 - Autorización de Transferencia -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="step-num">3</span>
+            Compuerta 1: Autorizar Procesamiento al Operador
+          </div>
+          <span id="badge-gate1" class="badge badge-neutral">Pendiente</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="info-row">
+            <span class="info-label">Operador Destino:</span>
+            <span class="info-val">antigravity-operator (asistido: intercambio auditable)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Frontera de Confianza:</span>
+            <span class="info-val">is_external = True (Exige TransferApproval)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Package Hash:</span>
+            <span id="val-package-hash" class="info-val">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Misión ID Exportada:</span>
+            <span id="val-mission-id" class="info-val">—</span>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <input type="text" id="input-actor-gate1" value="operador-humano (panel local)"
+              placeholder="Identidad del actor"
+              style="flex:1; background:#090d14; border:1px solid var(--card-border); border-radius:6px; color:#cbd5e1; padding:7px 10px; font-size:12px;">
+            <button id="btn-authorize-transfer" class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              Autorizar Transferencia
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4: Revisión del Borrador & Propuesta del Operador -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="step-num">4</span>
+            Revisión del Borrador e Inferencias
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button id="btn-import-proposal" class="btn btn-primary"
+              title="Importar response.json existente en disco sin modificarlo">
+              Importar response.json
+            </button>
+            <button id="btn-generate-fixture" class="btn btn-amber"
+              title="Generar un fixture sintético de prueba explícitamente etiquetado">
+              Generar Fixture
+            </button>
+          </div>
+        </div>
+        <div class="draft-box" id="box-draft-text">
+          Esperando que el operador genere y firme la propuesta estructurada en response.json...
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div class="info-row">
+            <span class="info-label">Naturaleza de la Propuesta:</span>
+            <span id="val-proposal-nature" class="info-val" style="color:#60a5fa;">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Citas Verificadas en Contexto Autorizado:</span>
+            <span id="val-citations" class="info-val">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Draft Hash:</span>
+            <span id="val-draft-hash" class="info-val">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 5: Compuerta 2 - Aprobación de Inserción & Readback -->
+      <div class="card col-12">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="step-num">5</span>
+            Compuerta 2: Aprobación de Inserción Exacta en Control Win32
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button id="btn-approve-insertion" class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Aprobar Inserción Exacta
+            </button>
+            <button id="btn-execute-insertion" class="btn btn-success" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+              Ejecutar en HWND & Readback
+            </button>
+            <button id="btn-check-readback" class="btn btn-ghost"
+              title="Comprobar directamente lectura WM_GETTEXT contra el borrador">
+              Reverificar Readback
+            </button>
+          </div>
+        </div>
+
+        <div id="banner-delivery-alert" style="display:none;" class="alert-banner alert-banner-danger">
+          <span id="banner-delivery-text">Error de inserción</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px;">
+          <div class="surface-item">
+            <div class="surface-name">Control de Destino</div>
+            <div class="info-row"><span class="info-label">App:</span><span class="info-val"
+                id="val-target-app">Win32TargetApp</span></div>
+            <div class="info-row"><span class="info-label">HWND:</span><span class="info-val"
+                id="val-target-hwnd">—</span></div>
+            <div class="info-row"><span class="info-label">PID:</span><span class="info-val"
+                id="val-target-pid">—</span></div>
+          </div>
+          <div class="surface-item">
+            <div class="surface-name">Estado de Inserción</div>
+            <div class="info-row"><span class="info-label">Status:</span><span class="info-val"
+                id="val-delivery-status">—</span></div>
+            <div class="info-row"><span class="info-label">Readback (WM_GETTEXT):</span><span class="info-val"
+                id="val-readback-status">—</span></div>
+            <div class="info-row"><span class="info-label">Misión Consumida:</span><span class="info-val"
+                id="val-mission-consumed">—</span></div>
+          </div>
+          <div class="surface-item">
+            <div class="surface-name">Integridad del Ledger</div>
+            <div class="info-row"><span class="info-label">verify_chain():</span><span class="info-val"
+                id="val-verify-chain">—</span></div>
+            <div class="info-row"><span class="info-label">Eslabones Criptográficos:</span><span class="info-val"
+                id="val-chain-count">—</span></div>
+            <div class="info-row"><span class="info-label">Correspondencia Prov:</span><span class="info-val"
+                id="val-prov-corresp">Validada</span></div>
+          </div>
+          <div class="surface-item">
+            <div class="surface-name">Detección de Manipulación</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">Prueba interactiva sobre copia
+              temporal (historial intacto):</div>
+            <div style="display:flex; gap:6px;">
+              <button id="btn-tamper-pid" class="btn btn-danger" style="padding:4px 8px; font-size:11px;">Alterar PID
+                (Copia)</button>
+              <button id="btn-tamper-delete" class="btn btn-danger" style="padding:4px 8px; font-size:11px;">Borrar Prov
+                (Copia)</button>
+            </div>
+            <div id="val-tamper-feedback"
+              style="font-size:11px; font-family:'JetBrains Mono',monospace; color:#cbd5e1; margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Ledger trail -->
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Últimos Eslabones de
+            la Cadena Criptográfica (interventions):</div>
+          <div id="box-chain-trail"
+            style="display:flex; gap:8px; flex-wrap:wrap; font-family:'JetBrains Mono', monospace; font-size:11px;">
+            <!-- Render dinámico -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-msg">Notificación</div>
+
+  <script>
+    const sessionToken = document.querySelector('meta[name="session-token"]')?.getAttribute('content') || '';
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(text, isError = false) {
+      const t = document.getElementById('toast-msg');
+      t.textContent = text;
+      t.style.borderColor = isError ? '#ef4444' : '#3b82f6';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Session-Token': sessionToken,
+      };
+      const opts = { method, headers };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(endpoint, opts);
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || 'Error en operación', true);
+        throw new Error(data.error || 'Error');
+      }
+      return data;
+    }
+
+    async function refreshState() {
+      try {
+        const state = await apiCall('/api/state');
+        renderState(state);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderState(state) {
+      // Opt-in toggle & Live Capture status
+      document.getElementById('opt-in-toggle').checked = state.opt_in;
+      const capBadge = document.getElementById('badge-capture-status');
+      const capText = document.getElementById('text-capture-status');
+      if (capBadge && capText) {
+        if (state.opt_in) {
+          capBadge.className = 'badge badge-success';
+          capText.textContent = 'Captura en vivo: ACTIVA (Opt-in ON)';
+        } else {
+          capBadge.className = 'badge badge-danger';
+          capText.textContent = 'Captura en vivo: INACTIVA (Historial en reposo)';
+        }
+      }
+
+      // Cadena status badge
+      const chainBadge = document.getElementById('badge-chain-status');
+      if (state.chain_valid) {
+        chainBadge.className = 'badge badge-success';
+        chainBadge.innerHTML = '<span class="badge-dot"></span><span>Cadena Criptográfica: VÁLIDA</span>';
+      } else {
+        chainBadge.className = 'badge badge-danger';
+        chainBadge.innerHTML = '<span class="badge-dot"></span><span>Cadena Criptográfica: ALTERADA</span>';
+      }
+
+      // Render Superficies con controles desacoplados
+      const surfCont = document.getElementById('surfaces-container');
+      surfCont.innerHTML = '';
+      state.surfaces.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'surface-item';
+        div.innerHTML = `
+          <div class="surface-head">
+            <span class="surface-name">${escapeHtml(s.name)} ${s.is_target ? '<span class="badge badge-neutral" style="font-size:10px; padding:2px 6px;">DESTINO</span>' : ''}</span>
+            <div class="surface-meta">HWND: ${escapeHtml(s.hwnd_hex)} (${s.hwnd}) | PID: ${s.pid}</div>
+          </div>
+          ${!s.is_target ? `
+            <div class="surface-controls" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px;">
+              <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
+                <input type="checkbox" ${s.is_authorized ? 'checked' : ''} onchange="updateSurfaceAuth(${s.hwnd}, this.checked)">
+                Autorizado (Allowlist)
+              </label>
+              <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
+                <input type="checkbox" ${s.capture_allowed ? 'checked' : ''} onchange="updateSurfaceCapture(${s.hwnd}, this.checked)">
+                Permitir Captura de Texto
+              </label>
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:12px;">
+                <span style="color:var(--text-muted);">Alcance:</span>
+                <select onchange="updateSurfaceScope(${s.hwnd}, this.value)" style="background:#090d14; border:1px solid var(--card-border); border-radius:4px; color:#cbd5e1; padding:2px 6px; font-size:11px;">
+                  <option value="may_transfer" ${s.permission_scope === 'may_transfer' ? 'selected' : ''}>may_transfer (Exportable)</option>
+                  <option value="local-only" ${s.permission_scope === 'local-only' ? 'selected' : ''}>local-only (Solo local)</option>
+                  <option value="restricted" ${s.permission_scope === 'restricted' ? 'selected' : ''}>restricted (Restringido)</option>
+                </select>
+              </div>
+            </div>
+            <div class="surface-body">
+              <textarea id="text-surf-${s.hwnd}" placeholder="Contenido cargado en el control EDIT..."></textarea>
+              <button class="btn btn-ghost" style="padding:4px 8px; font-size:11px; margin-top:4px;" onclick="updateSurfaceText('${escapeHtml(s.id)}', ${s.hwnd})">Actualizar Texto en Win32</button>
+            </div>
+          ` : `
+            <div class="surface-meta">Control de destino para inserción verificado por HWND y clase EDIT.</div>
+          `}
+        `;
+        surfCont.appendChild(div);
+      });
+
+      // Query
+      document.getElementById('input-query').value = state.current_query;
+
+      // Package & Exclusiones
+      const selBox = document.getElementById('box-selected-context');
+      const exclBox = document.getElementById('box-excluded-context');
+      if (state.package_built && state.package_info) {
+        document.getElementById('val-package-hash').textContent = state.package_info.package_hash.slice(0, 16) + '…';
+        selBox.innerHTML = state.package_info.additional_context.map(c => `
+          <div class="stream-item">
+            <span class="stream-tag tag-sel">SELECCIONADO · ${escapeHtml(c.app)}</span>
+            <div>${escapeHtml(c.content)}</div>
+          </div>
+        `).join('') || '<span style="color:var(--text-muted);">Ninguna fuente adicional</span>';
+
+        exclBox.innerHTML = state.package_info.excluded_context.map(e => `
+          <div class="stream-item">
+            <span class="stream-tag tag-excl">EXCLUIDO · ${escapeHtml(e.app)}</span>
+            <div>Motivo: <code>${escapeHtml(e.reason)}</code></div>
+          </div>
+        `).join('') || '<span style="color:var(--text-muted);">Sin exclusiones</span>';
+      }
+
+      // Procedencia (renderizado seguro de texto)
+      const provBox = document.getElementById('box-provenance-log');
+      provBox.innerHTML = state.recent_observations.map(o => `
+        <div class="stream-item">
+          <div><b style="color:#60a5fa">${escapeHtml(o.application)}</b>: "${o.content ? escapeHtml(o.content.slice(0, 45)) + '…' : '[REDACTADO_POR_POLÍTICA]'}"</div>
+          <div style="font-size:10px; color:var(--text-muted);">
+            ID: ${escapeHtml(o.event_id)} | HWND: 0x${o.provenance ? o.provenance.hwnd.toString(16).toUpperCase() : 'N/A'} | PID: ${o.provenance ? o.provenance.pid : 'N/A'} | Método: ${escapeHtml(o.provenance ? o.provenance.read_method : 'N/A')}
+          </div>
+        </div>
+      `).join('') || '<span style="color:var(--text-muted);">Sin eventos</span>';
+
+      // Gate 1 status
+      const badgeGate1 = document.getElementById('badge-gate1');
+      if (state.transfer_approved) {
+        badgeGate1.className = 'badge badge-success';
+        badgeGate1.textContent = 'Autorizada';
+        document.getElementById('val-mission-id').textContent = state.mission_id || 'msn-exportado';
+      } else {
+        badgeGate1.className = 'badge badge-neutral';
+        badgeGate1.textContent = 'Pendiente';
+      }
+
+      // Draft & Proposal con etiquetado transparente de procedencia
+      const draftBox = document.getElementById('box-draft-text');
+      if (state.draft_ready && state.draft_info) {
+        draftBox.textContent = state.draft_info.text;
+        document.getElementById('val-citations').textContent = state.draft_info.citations.join(', ');
+        document.getElementById('val-draft-hash').textContent = state.draft_info.draft_hash.slice(0, 16) + '…';
+        const natureSpan = document.getElementById('val-proposal-nature');
+        const nature = state.draft_info.nature || 'propuesta_operador';
+        natureSpan.textContent = nature;
+        if (nature.includes('sintetico') || nature.includes('fixture')) {
+          natureSpan.style.color = '#f59e0b';
+        } else if (nature.includes('sin_atribucion')) {
+          natureSpan.style.color = '#94a3b8';
+        } else {
+          natureSpan.style.color = '#60a5fa';
+        }
+        document.getElementById('btn-approve-insertion').disabled = false;
+      }
+
+      // Target app info
+      const tgt = state.surfaces.find(s => s.is_target);
+      if (tgt) {
+        document.getElementById('val-target-hwnd').textContent = `${tgt.hwnd_hex} (${tgt.hwnd})`;
+        document.getElementById('val-target-pid').textContent = tgt.pid;
+      }
+
+      // Gate 2 & Delivery
+      if (state.insertion_approved) {
+        document.getElementById('btn-execute-insertion').disabled = false;
+      }
+
+      const alertBanner = document.getElementById('banner-delivery-alert');
+      const alertText = document.getElementById('banner-delivery-text');
+
+      if (state.delivery_result) {
+        const deliv = state.delivery_result;
+        const delivSpan = document.getElementById('val-delivery-status');
+        const readbackSpan = document.getElementById('val-readback-status');
+
+        delivSpan.textContent = deliv.status;
+
+        // Requiere estricta verificación positiva de readback
+        if (deliv.status === 'inserted_not_sent' && deliv.readback_verified === true) {
+          delivSpan.style.color = '#34d399';
+          readbackSpan.textContent = 'True (WM_GETTEXT verificado)';
+          readbackSpan.style.color = '#34d399';
+          document.getElementById('val-mission-consumed').textContent = 'True (Atómico)';
+          alertBanner.style.display = 'none';
+        } else {
+          // Fallo, discrepancia en readback o repetición bloqueada
+          delivSpan.style.color = '#f87171';
+          const failMsg = (deliv.readback_verified === false)
+            ? 'False (Discrepancia en lectura / readback fallido)'
+            : 'False (No verificado)';
+          readbackSpan.textContent = failMsg;
+          readbackSpan.style.color = '#f87171';
+          alertBanner.style.display = 'flex';
+          alertText.textContent = `Aviso: Inserción o verificación no conforme [${escapeHtml(deliv.status)}] - Readback: ${deliv.readback_verified} - Motivo: ${escapeHtml(deliv.reason || 'verificación_fallida')}`;
+        }
+      }
+
+      document.getElementById('val-verify-chain').textContent = state.chain_valid ? 'True (Válida)' : 'False (Alterada)';
+      document.getElementById('val-chain-count').textContent = `${state.chain_links_count} eslabones`;
+
+      // Chain trail
+      const trailBox = document.getElementById('box-chain-trail');
+      trailBox.innerHTML = state.last_chain_links.map(l => `
+        <span style="background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px; border:1px solid #334155;">
+          ${escapeHtml(l.kind)} <code style="color:#60a5fa">${escapeHtml(l.hash)}</code>
+        </span>
+      `).join('');
+
+      // Tamper feedback
+      if (state.last_tamper_log) {
+        document.getElementById('val-tamper-feedback').textContent = state.last_tamper_log;
+      }
+    }
+
+    // Handlers
+    document.getElementById('opt-in-toggle').addEventListener('change', async (e) => {
+      try {
+        const res = await apiCall('/api/opt_in', 'POST', { enabled: e.target.checked });
+        showToast(res.opt_in ? 'Captura activada (Opt-in concedido)' : 'Captura desactivada');
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-refresh-state').addEventListener('click', () => {
+      refreshState();
+      showToast('Estado actualizado');
+    });
+
+    document.getElementById('btn-observe-surfaces').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/observe', 'POST');
+        showToast(`Observación completada: ${res.observations.length} eventos`);
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-build-context').addEventListener('click', async () => {
+      try {
+        const query = document.getElementById('input-query').value;
+        const res = await apiCall('/api/build_context', 'POST', { query });
+        showToast('ContextBuilder ejecutado: paquete generado');
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-authorize-transfer').addEventListener('click', async () => {
+      try {
+        const actor = document.getElementById('input-actor-gate1').value;
+        const res = await apiCall('/api/authorize_transfer', 'POST', { actor });
+        showToast(`Compuerta 1 aprobada. Misión ${res.mission_id} exportada.`);
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-import-proposal').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/import_proposal', 'POST');
+        if (res.status === 'waiting_response') {
+          showToast(res.message, true);
+        } else {
+          showToast('Propuesta importada de response.json sin modificar.');
+        }
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-generate-fixture').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/generate_fixture_proposal', 'POST');
+        showToast('Fixture de prueba generado y etiquetado.');
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-approve-insertion').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/approve_insertion', 'POST', { actor: 'operador-humano (panel local)' });
+        showToast('Compuerta 2 aprobada. Inserción autorizada para el control exacto.');
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-execute-insertion').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/execute_insertion', 'POST');
+        if (res.status === 'inserted_not_sent') {
+          showToast(`Inserción exitosa: ${res.status}. Readback verificado.`);
+        } else {
+          showToast(`Inserción bloqueada: ${res.reason || res.status}`, true);
+        }
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-tamper-pid').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/tamper_provenance', 'POST', { type: 'pid' });
+        showToast(`Demostración en copia aislada completada. Historial compartido intacto.`);
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-tamper-delete').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/tamper_provenance', 'POST', { type: 'delete' });
+        showToast(`Demostración en copia aislada completada. Historial compartido intacto.`);
+        refreshState();
+      } catch (err) { }
+    });
+
+    document.getElementById('btn-check-readback').addEventListener('click', async () => {
+      try {
+        const res = await apiCall('/api/check_readback', 'POST');
+        if (res.readback_verified) {
+          showToast(`Readback verificado: Coincide exactamente con el texto esperado.`);
+        } else {
+          showToast(`Readback NO verificado: ${res.reason || 'Discrepancia en texto'}`, true);
+        }
+        refreshState();
+      } catch (err) { }
+    });
+
+    async function updateSurfaceAuth(hwnd, authorized) {
+      try {
+        await apiCall('/api/surfaces/configure', 'POST', { hwnd, authorized });
+        showToast(authorized ? 'Superficie añadida a allowlist' : 'Superficie removida de allowlist');
+        refreshState();
+      } catch (e) { }
+    }
+
+    async function updateSurfaceCapture(hwnd, capture_allowed) {
+      try {
+        await apiCall('/api/surfaces/configure', 'POST', { hwnd, capture_allowed });
+        showToast(capture_allowed ? 'Captura de texto permitida' : 'Captura de texto prohibida (evento sin contenido)');
+        refreshState();
+      } catch (e) { }
+    }
+
+    async function updateSurfaceScope(hwnd, permission_scope) {
+      try {
+        await apiCall('/api/surfaces/configure', 'POST', { hwnd, permission_scope });
+        showToast(`Alcance de permiso actualizado a: ${permission_scope}`);
+        refreshState();
+      } catch (e) { }
+    }
+
+    async function updateSurfaceText(id, hwnd) {
+      const textarea = document.getElementById(`text-surf-${hwnd}`);
+      if (!textarea) return;
+      try {
+        await apiCall('/api/surfaces/set_text', 'POST', { surface_id: id, text: textarea.value });
+        showToast('Texto inyectado en el control Win32 EDIT nativo');
+      } catch (e) { }
+    }
+
+    // Inicialización automática
+    refreshState();
+  </script>
+</body>
+
+</html>

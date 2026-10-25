@@ -1,0 +1,18 @@
+=== VENTANA DESTINO (Editor / Chat Técnico) ===
+Archivo: order_discounts.py
+Error observado:
+AssertionError: El cupón PROMO_REGIONAL en orden ord-101 (LATAM, subtotal 80.00 USD) devolvió descuento 4.00 USD, pero falló en auditoría de facturación.
+Consulta del desarrollador:
+"¿Cómo debe implementarse correctamente apply_regional_discount() para la región LATAM y el cupón PROMO_REGIONAL para que cumpla los requisitos de facturación vigentes?"
+
+Fragmento de código en editor:
+def apply_regional_discount(order: dict, coupon_code: str) -> dict:
+    subtotal = order.get("subtotal", Decimal("0.00"))
+    region = order.get("region", "GLOBAL")
+    if coupon_code == "PROMO_REGIONAL":
+        discount = float(subtotal) * 0.05
+        order["discount_amount"] = Decimal(str(round(discount, 2)))
+    else:
+        order["discount_amount"] = Decimal("0.00")
+    order["final_total"] = calculate_order_total(subtotal, order.get("tax_rate", Decimal("0.16")), order["discount_amount"])
+    return order
