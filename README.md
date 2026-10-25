@@ -97,15 +97,15 @@ python run_operator_assisted_flow.py
 
 ## 6. Testing and Verification
 
-Run the comprehensive automated test suite (81 tests covering core logic, double gates, tamper-evident ledger, memory, and surfaces):
+Run the comprehensive automated test suite (84 tests covering core logic, double gates, tamper-evident ledger, memory, and surfaces):
 ```bash
 python -m pytest tests -v
 ```
 
 ### Continuous Integration (CI)
 GitHub Actions verifies every push across:
-- **Windows:** Validates all 81 tests including Win32 native controls, cryptographic anchors, and regression invariants.
-- **Linux:** Validates 68 tests covering context building, project memory, gate authorization, and cryptography, cleanly skipping 13 Win32-specific desktop tests (68 passed, 13 skipped).
+- **Windows:** Validates all 84 tests including Win32 native controls, cryptographic anchors, and regression invariants.
+- **Linux:** Validates 71 tests covering context building, project memory, gate authorization, and cryptography, cleanly skipping 13 Win32-specific desktop tests (71 passed, 13 skipped).
 
 ---
 

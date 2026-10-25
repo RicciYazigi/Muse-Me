@@ -46,3 +46,9 @@ MUSE (nombre público de producto: **Muse-Me**) es un entorno de asistencia cont
   - **F08 (P0 XSS):** Añadido `escapeHtml` en `panel.html` para todas las plantillas dinámicas de fuentes.
   - **F09 (P1 Path Traversal):** Rutas de `/api/open_artifact` y directorios de entregables restringidos estrictamente al espacio de trabajo.
   - **F10 (Configuración):** `pyproject.toml` aísla los fixtures del piloto de utilidad con `testpaths = ["tests"]` y `.env.example` sincronizado con `api.meta.ai/v1`.
+
+### Actualización de Arquitectura Nivel Siguiente (24-oct-2026):
+- **Suite de Pruebas:** 84 passed en Windows (71 passed, 13 skipped en Linux).
+- **Servidor MCP Gobernado (src/muse_env/mcp_server.py):** Expone las herramientas `get_context_package`, `propose_insertion` y `verify_state` para consumo directo de Muse Code, Claude Code y Cursor sobre stdio JSON-RPC 2.0.
+- **Context Compiler v2 (Vigencia y Exclusiones Motivadas):** Resuelve F3 descartando especificaciones obsoletas (`v1.0`) cuando existe una vigente autorizada (`v2.4`), declarando el motivo explícito de exclusión.
+- **Fusible de Contención Temporal (F07):** Conectado en Compuerta 2 (`execute_deliverable_action`) con interruptor A/B y métrica I²t evaluada en vivo.

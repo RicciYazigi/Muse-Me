@@ -1,4 +1,7 @@
-﻿"""Contracts and engines for Muse-Me core capabilities:
+from __future__ import annotations
+import time
+from .gate import TrajectorySensor
+"""Contracts and engines for Muse-Me core capabilities:
 1. Evidence Comparison (Comparar evidencia)
 2. Deliverable Production (Producir un entregable)
 
@@ -10,7 +13,6 @@ Enforces:
 - Idempotent action execution (no duplicate writes / replay)
 - Persistent state transitions (draft -> proposal_ready -> action_approved -> completed)
 """
-from __future__ import annotations
 import hashlib
 import json
 import re
@@ -281,7 +283,10 @@ def execute_deliverable_action(
     target_dir: str | Path,
     filename: str,
     approved_draft_sha256: str,
-    user_approved: bool = False
+    user_approved: bool = False,
+    fuse_sensor: Optional[TrajectorySensor] = None,
+    risk_score: float = 0.0,
+    fuse_path: str = "session"
 ) -> Dict[str, Any]:
     """Capability B (Phase 2): Execute approved local file creation.
     - Enforces Gate 2 approval and non-duplication
@@ -289,6 +294,10 @@ def execute_deliverable_action(
     - Writes exact content into authorized target directory
     - Performs cryptographic readback verification
     """
+    # F07: Temporal Fuse Gate 2
+    if fuse_sensor is not None and fuse_sensor.observe(risk_score, effect="write", t=time.time(), path=fuse_path):
+        raise PermissionError("Compuerta 2 bloqueada por Fusible Temporal (I²t): riesgo acumulado excedió el umbral.")
+
     if not user_approved:
         raise PermissionError("Compuerta 2 rechazada: falta la aprobación explícita del usuario.")
 
