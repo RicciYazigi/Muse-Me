@@ -297,8 +297,13 @@ def execute_deliverable_action(
     """
     # F07: Temporal Fuse Gate 2
     t_now = fuse_t if fuse_t is not None else time.time()
-    if fuse_sensor is not None and fuse_sensor.observe(risk_score, effect="write", t=t_now, path=fuse_path):
-        raise PermissionError("Compuerta 2 bloqueada por Fusible Temporal (I²t): riesgo acumulado excedió el umbral.")
+    if fuse_sensor is not None:
+        if hasattr(fuse_sensor, "evaluate"):
+            verdict = fuse_sensor.evaluate(score=risk_score, effect="write", t=t_now, session=fuse_path)
+            if not verdict.allowed:
+                raise PermissionError(f"Compuerta 2 bloqueada por Fusible Temporal ({verdict.action}): riesgo acumulado ({verdict.effective_state:.4f}) no permite la accin.")
+        elif fuse_sensor.observe(risk_score, effect="write", t=t_now, path=fuse_path):
+            raise PermissionError("Compuerta 2 bloqueada por Fusible Temporal (It): riesgo acumulado excedi el umbral.")
 
     if not user_approved:
         raise PermissionError("Compuerta 2 rechazada: falta la aprobación explícita del usuario.")

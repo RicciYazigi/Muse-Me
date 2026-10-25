@@ -198,18 +198,24 @@ class ProjectMemory:
                 selected.append(item)
                 rem_budget -= len(item["content"])
 
-        # Also declare any project sources explicitly restricted
-        restricted_rows = self.db.execute(
-            "SELECT source FROM sources WHERE project=? AND scope='restricted'",
-            (project,)
-        ).fetchall()
-        for r_row in restricted_rows:
-            if not any(ex["source"] == r_row["source"] for ex in excluded):
-                excluded.append({
-                    "source": r_row["source"],
-                    "reason": "Excluida por política de confidencialidad: permiso de transferencia revocado (scope='restricted')"
-                })
-
+        # Also declare any non-transferable project sources when external=True or restricted
+        if external:
+            non_transferable = self.db.execute(
+                "SELECT source, scope FROM sources WHERE project=? AND scope != 'may_transfer'",
+                (project,)
+            ).fetchall()
+            for nt in non_transferable:
+                if not any(ex["source"] == nt["source"] for ex in excluded):
+                    reason_msg = "Excluida por política de confidencialidad (scope='restricted')" if nt["scope"] == "restricted" else f"Excluida por alcance local: permiso es '{nt['scope']}', no transferible a operador externo"
+                    excluded.append({"source": nt["source"], "reason": reason_msg})
+        else:
+            restricted_rows = self.db.execute(
+                "SELECT source FROM sources WHERE project=? AND scope='restricted'",
+                (project,)
+            ).fetchall()
+            for r_row in restricted_rows:
+                if not any(ex["source"] == r_row["source"] for ex in excluded):
+                    excluded.append({"source": r_row["source"], "reason": "Excluida por política de confidencialidad (scope='restricted')"})
         return {"selected": selected, "excluded": excluded}
 
     def checkpoint(self, project, goal, refs, note='', capability='deliverable_production', criteria=None):

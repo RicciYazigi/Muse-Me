@@ -88,14 +88,6 @@ class MuseDesktopGesture:
         compiler_res = self.memory.search_with_exclusions(project, query_goal, external=False)
         selected = compiler_res["selected"]
 
-        if not selected and goal is None:
-            # When invoked as generic gesture without explicit search keywords, select all available transferable sources
-            rows = self.memory.db.execute(
-                "SELECT s.source, s.revision, s.scope, r.content FROM sources s JOIN revisions r ON s.project=r.project AND s.source=r.source AND s.revision=r.revision WHERE s.project=? AND s.scope='may_transfer' AND (s.status IS NULL OR s.status != 'superseded') LIMIT 8",
-                (project,)
-            ).fetchall()
-            selected = [{"source": r["source"], "revision": r["revision"], "scope": r["scope"], "content": r["content"]} for r in rows]
-
         if not selected:
             return {
                 "gesture_action": "reply_with_muse",

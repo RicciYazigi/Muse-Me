@@ -113,10 +113,10 @@ class MuseMeMCPServer:
         p.parent.mkdir(parents=True, exist_ok=True)
         self.memory = ProjectMemory(str(p))
 
-    def get_context_package(self, goal: str, project: str = "demo-latam", token_budget: int = 1500) -> Dict[str, Any]:
+    def get_context_package(self, goal: str, project: str = "demo-latam", token_budget: int = 1500, external: bool = True) -> Dict[str, Any]:
         """Tool 1: Compile governed context package with token budget, vigencia filter, and reasoned exclusions."""
         char_budget = token_budget * 4
-        search_res = self.memory.search_with_exclusions(project, goal, external=False, budget=char_budget)
+        search_res = self.memory.search_with_exclusions(project, goal, external=external, budget=char_budget)
         budgeted_evidence = search_res["selected"]
         excluded = search_res["excluded"]
         current_chars = sum(len(ev.get("content", "")) for ev in budgeted_evidence)
@@ -190,7 +190,8 @@ class MuseMeMCPServer:
             goal = arguments.get("goal", "")
             proj = arguments.get("project", "demo-latam")
             budget = arguments.get("token_budget", 1500)
-            return self.get_context_package(goal=goal, project=proj, token_budget=budget)
+            ext = arguments.get("external", True)
+            return self.get_context_package(goal=goal, project=proj, token_budget=budget, external=ext)
         elif name == "propose_insertion":
             mid = arguments.get("mission_id", "")
             title = arguments.get("title", "Propuesta Contextual")

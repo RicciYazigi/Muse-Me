@@ -414,3 +414,31 @@ def test_panel_tamper_demo_does_not_modify_shared_history(tmp_path):
 
     finally:
         engine.close()
+
+
+def test_panel_engine_instantiates_fuse_and_evaluates_on_deliverable(tmp_path):
+    """A2: Verify PanelEngine instantiates TrajectorySensor and evaluates it on execute_deliverable."""
+    db_p = tmp_path / "panel_obs.sqlite"
+    pm_p = tmp_path / "panel_pm.sqlite"
+    engine = PanelEngine(db_path=db_p, runs_dir=tmp_path, use_mock_surfaces=True, project_memory_path=pm_p)
+    try:
+        assert engine.fuse_sensor is not None, "fuse_sensor must be instantiated in PanelEngine"
+        assert engine._fuse_session_start is not None
+
+        engine.ingest_project_source("proj_fuse", "spec.md", "Reglas y especificaciones operativas.", scope="may_transfer")
+        res_cp = engine.query_and_checkpoint("proj_fuse", "especificaciones", capability="deliverable_production")
+        mid = res_cp["mission_id"]
+        prop = engine.run_capability_propose_deliverable(mid, title="Doc Fuse")
+
+        # Execute deliverable through panel engine
+        res = engine.run_capability_execute_deliverable(
+            mid, target_dir=str(tmp_path), filename="fuse_doc.md", approved_draft_sha256=prop["draft_sha256"]
+        )
+        assert res["readback_verified"] is True
+        assert Path(res["artifact_path"]).exists()
+
+        # Check that session turn index incremented and sensor observed the session
+        assert engine._fuse_turn_index >= 1
+    finally:
+        engine.store.close()
+        engine.project_memory.close()

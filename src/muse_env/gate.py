@@ -55,23 +55,45 @@ def checkpoint(package, *, store, transfer_required):
 
 class TrajectorySensor:
     """Experimental risk signals are supplied by the caller, never invented here.
-    Preserves exact original stop behavior while adding rich multi-tier Verdict evaluation.
+    Multi-tier containment policy (GO / DEGRADE / STOP):
+    - GO: All authorized operations permitted (effective <= degrade_threshold).
+    - DEGRADE: Suspends mutations/shares/writes; only read/observe permitted
+      (degrade_threshold < effective <= stop_threshold).
+    - STOP: Containment trip; all operations blocked (effective > stop_threshold).
     """
-    def __init__(self, threshold=0.04):
-        self.fuse = Fuse(statistic="i2t", threshold=threshold, theta=0.60, tau=50.0, reset_on_trip=False)
+    def __init__(self, threshold: float = 0.04, policy: GatePolicy | None = None):
         self.threshold = threshold
+        self.policy = policy or GatePolicy()
+        # Default stop threshold matches canonical I2t threshold=0.04
+        # degrade_threshold activates half-way (0.02) or at custom policy
+        if policy is not None:
+            self.stop_threshold = policy.stop_threshold
+            self.degrade_threshold = policy.degrade_threshold
+        else:
+            self.stop_threshold = threshold
+            self.degrade_threshold = threshold * 0.5  # 0.02
+
+        self.fuse = Fuse(
+            statistic="i2t",
+            threshold=self.stop_threshold,
+            theta=self.policy.theta,
+            tau=self.policy.tau,
+            reset_on_trip=False
+        )
         self.enabled = True
         self._stopped = set()
 
-    def observe(self, score, effect, t, path="session"):
+    def observe(self, score, effect, t, path="session") -> bool:
+        """Observe risk and return True if trajectory is stopped (trip or state > stop_threshold)."""
         if not self.enabled:
             return False
         if path in self._stopped:
             return True
-        trip = self.fuse.observe(score, t=t, path=path, weight=EFFECT_W[effect])
-        if trip is not None:
+        trip = self.fuse.observe(score, t=t, path=path, weight=EFFECT_W.get(effect, 1.0))
+        if trip is not None or (self.fuse.value(path) * EFFECT_W.get(effect, 1.0) > self.stop_threshold):
             self._stopped.add(path)
-        return trip is not None
+            return True
+        return False
 
     def evaluate(self, *, score: float, t: float, effect: str, session: str = "session") -> Verdict:
         """Evaluate structured Verdict (GO / DEGRADE / STOP) based on accumulated thermal state."""
@@ -79,9 +101,17 @@ class TrajectorySensor:
             return Verdict("GO", True, 0.0, 0.0, session)
         stopped = self.observe(score, effect, t, path=session)
         state = self.fuse.value(session)
-        effective = state * EFFECT_W[effect]
-        action = "STOP" if stopped else ("DEGRADE" if effective > self.threshold else "GO")
-        allowed = not stopped
+        effective = state * EFFECT_W.get(effect, 1.0)
+
+        if stopped:
+            action = "STOP"
+        elif effective > self.degrade_threshold:
+            action = "DEGRADE"
+        else:
+            action = "GO"
+
+        # In DEGRADE, allow read/observe; strictly block write/insert/share
+        allowed = action == "GO" or (action == "DEGRADE" and effect in ("read", "observe"))
         return Verdict(action, allowed, state, effective, session)
 
     def reset(self, path="session"):

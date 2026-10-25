@@ -47,13 +47,14 @@ MUSE (nombre público de producto: **Muse-Me**) es un entorno de asistencia cont
   - **F09 (P1 Path Traversal):** Rutas de `/api/open_artifact` y directorios de entregables restringidos estrictamente al espacio de trabajo.
   - **F10 (Configuración):** `pyproject.toml` aísla los fixtures del piloto de utilidad con `testpaths = ["tests"]` y `.env.example` sincronizado con `api.meta.ai/v1`.
 
-### Actualización de Arquitectura Nivel Siguiente (24-oct-2026):
-- **Suite de Pruebas:** 84 passed en Windows (71 passed, 13 skipped en Linux).
-- **Servidor MCP Gobernado (src/muse_env/mcp_server.py):** Expone las herramientas `get_context_package`, `propose_insertion` y `verify_state` para consumo directo de Muse Code, Claude Code y Cursor sobre stdio JSON-RPC 2.0.
-- **Context Compiler v2 (Vigencia y Exclusiones Motivadas):** Resuelve F3 descartando especificaciones obsoletas (`v1.0`) cuando existe una vigente autorizada (`v2.4`), declarando el motivo explícito de exclusión.
-- **Fusible de Contención Temporal (F07):** Conectado en Compuerta 2 (`execute_deliverable_action`) con interruptor A/B y métrica I²t evaluada en vivo.
-
-### Gesto de Escritorio y Contención Temporal Enriquecida (24-oct-2026):
-- **Suite de Pruebas:** 85 passed en Windows (72 passed, 13 skipped en Linux).
-- **Gesto de Producto ('Responder con Muse') (src/muse_env/gesture.py):** Permite disparar la asistencia contextual directamente sobre la ventana activa mediante CLI (`--trigger`), script PowerShell (`Start-MuseGesture.ps1`) o atajo. Garantiza que ventanas no autorizadas se bloqueen tajantemente antes de leer cualquier contenido.
-- **Modelo Multi-Tier de Contención Temporal (src/muse_env/gate.py):** Incorporado `GatePolicy` y `Verdict` (GO / DEGRADE / STOP) basado en la arquitectura de `fusegate-Meta Version`, evaluando estados térmicos acumulados por sesión.
+### Remediación de 5ta Auditoría (Paso 0.5) y Estado Real del Sistema (24-oct-2026):
+- **Suite de Pruebas:** 88 passed en Windows (75 passed, 13 skipped en Linux).
+- **A1 Gobernanza MCP Estricta (src/muse_env/mcp_server.py):** `get_context_package` compila con `external=True` por defecto. Fuentes con ámbito `local-only` quedan excluidas y auditadas en `excluded_sources`; solo fuentes `may_transfer` entran en `authorized_evidence`.
+- **A2 Conexión en Vivo de Fusible en Panel (src/muse_env/panel/engine.py):** `TrajectorySensor` instanciado activamente en `PanelEngine` con reloj monótono de sesión (`time.monotonic()`) y derivación de riesgo no destructiva basada en discrepancias.
+- **A3 Semántica Real de DEGRADE (src/muse_env/gate.py):** Implementada política multi-umbral (`degrade_threshold=0.04`, `stop_threshold=0.08`). En estado `DEGRADE`, las operaciones de lectura/observación se autorizan (`allowed=True`), pero escrituras/inserciones/transferencias se bloquean estrictamente (`allowed=False`).
+- **A4 Cero-Volcado en Invocación de Escritorio (src/muse_env/gesture.py):** Eliminado el volcado ciego de fuentes sin relevancia cuando la búsqueda léxica no coincide. Sin evidencia pertinente, devuelve honestamente `insufficient_evidence`.
+- **A5 Declaración Epistémica de Vigencia y Claims:** 
+  - La detección léxica actual se define con honestidad técnica como *heurística de vigencia por directiva explícita (v0)*. La vigencia canónica estructural se rige por metadatos declarados (`status`, `superseded_by`).
+  - La tabla `claims` en `project_memory.sqlite` está creada en el esquema; su indexación y consulta cruzada automática queda documentada como *fase de integración en curso*.
+- **A6 Blindaje XSS Activo (src/muse_env/panel/static/panel.html):** Invocación verificada de `escapeHtml` en todas las plantillas dinámicas del panel web, respaldada por test malicioso de inyección.
+- **A7 Clasificación Operativa del Gesto de Escritorio:** `src/muse_env/gesture.py` opera como *Invocación rápida de escritorio de un disparo* (CLI/PowerShell con comprobación de ventana activa); el bucle residente con `RegisterHotKey` global queda agendado post-N1.

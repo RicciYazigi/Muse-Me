@@ -61,3 +61,33 @@ def test_mcp_server_tools_list_and_context_package():
             assert len(st["project_summary"]["sources"]) == 2
         finally:
             server.memory.close()
+
+
+def test_mcp_server_blocks_local_only_leak():
+    """A1 RED TEST: An external MCP host must NEVER receive local-only sources."""
+    with tempfile.TemporaryDirectory() as td:
+        db_p = Path(td) / "test_pm_leak.sqlite"
+        mem = ProjectMemory(str(db_p))
+        try:
+            src_dir = Path(td) / "docs"
+            src_dir.mkdir()
+            f1 = src_dir / "internal_secrets.md"
+            f1.write_text("Informacion estrictamente confidencial de uso local.", encoding="utf-8")
+            mem.ingest_text("secret-proj", str(src_dir), "internal_secrets.md", scope="local-only")
+        finally:
+            mem.close()
+
+        server = MuseMeMCPServer(db_path=str(db_p))
+        try:
+            pkg = server.handle_call_tool("get_context_package", {
+                "project": "secret-proj",
+                "goal": "informacion confidencial local",
+                "token_budget": 500
+            })
+            sources_delivered = [ev["source"] for ev in pkg.get("authorized_evidence", [])]
+            # Must NOT be in authorized_evidence:
+            assert "internal_secrets.md" not in sources_delivered, "CRITICAL LEAK: local-only source delivered to MCP host!"
+            # Must be in excluded_sources:
+            assert any(ex["source"] == "internal_secrets.md" for ex in pkg.get("excluded_sources", []))
+        finally:
+            server.memory.close()

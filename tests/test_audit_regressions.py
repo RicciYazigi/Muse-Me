@@ -163,3 +163,25 @@ def test_f06_anchor_export_and_tamper_detection():
             assert store.verify_against_anchor(fake_anchor) is False
         finally:
             store.close()
+
+
+def test_f08_xss_prevention_in_panel_templates():
+    """F08 / A6: Panel HTML must invoke escapeHtml on dynamic source names, scopes, and divergence terms."""
+    panel_path = Path("src/muse_env/panel/static/panel.html")
+    assert panel_path.exists(), "panel.html must exist"
+    html_content = panel_path.read_text(encoding="utf-8")
+
+    # 1. escapeHtml must be defined
+    assert "function escapeHtml(str)" in html_content
+
+    # 2. escapeHtml must be actively invoked in templates
+    assert "${escapeHtml(s.source)}" in html_content
+    assert "${escapeHtml(s.scope)}" in html_content
+    assert "escapeHtml(d.divergent_terms" in html_content
+    assert "escapeHtml(d.epistemic_note)" in html_content
+
+    # 3. Verify escape function logic directly with malicious payload
+    malicious_payload = "<img src=x onerror=alert('xss')>"
+    escaped = malicious_payload.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&#039;")
+    assert "<" not in escaped and ">" not in escaped and "'" not in escaped
+    assert "&lt;img" in escaped

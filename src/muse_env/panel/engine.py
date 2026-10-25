@@ -82,6 +82,10 @@ class PanelEngine:
         self.delivery_result: dict[str, Any] | None = None
         self.operator = AntigravityAssistedOperator(store=self.store)
         self.last_tamper_log: str | None = None
+        from ..gate import TrajectorySensor
+        self.fuse_sensor = TrajectorySensor()
+        self._fuse_session_start = time.monotonic()
+        self._fuse_turn_index = 0
 
     def _init_surfaces(self) -> None:
         if sys.platform == "win32" and not self.use_mock_surfaces:
@@ -774,17 +778,49 @@ class PanelEngine:
 
     def run_capability_execute_deliverable(self, mission_id: str, target_dir: str = "artifacts", filename: str = "entregable.md", approved_draft_sha256: str = "") -> dict[str, Any]:
         with self._lock:
-            from ..capabilities import execute_deliverable_action
+            from ..capabilities import execute_deliverable_action, compare_evidence
             root = Path(__file__).resolve().parent.parent.parent.parent
             target_path = root / target_dir if not Path(target_dir).is_absolute() else Path(target_dir)
             target_path.mkdir(parents=True, exist_ok=True)
+
+            # Monotonic session timestamp and risk derivation from declared discrepancy signals
+            self._fuse_turn_index += 1
+            t_session = time.monotonic() - self._fuse_session_start + (self._fuse_turn_index * 0.1)
+
+            # Compute risk_score based on discrepancies or scope violations in mission
+            risk_score = 0.01
+            try:
+                # Derive risk non-destructively: analyze state without overwriting deliverable proposal
+                st = self.project_memory.resume(mission_id)
+                recs = []
+                for s_name, rev in st.get("refs", {}).items():
+                    row = self.project_memory.db.execute("SELECT content FROM revisions WHERE revision=?", (rev,)).fetchone()
+                    if row:
+                        recs.append(row[0])
+                num_disc = 0
+                if len(recs) >= 2:
+                    import re
+                    for i in range(len(recs)):
+                        for j in range(i + 1, len(recs)):
+                            nums_a = set(re.findall(r'\b\d+(?:[.,]\d+)?%?\b', recs[i]))
+                            nums_b = set(re.findall(r'\b\d+(?:[.,]\d+)?%?\b', recs[j]))
+                            if nums_a ^ nums_b:
+                                num_disc += 1
+                risk_score = min(0.95, 0.02 + (num_disc * 0.15))
+            except Exception:
+                pass
+
             return execute_deliverable_action(
                 self.project_memory,
                 mission_id,
                 target_path,
                 filename,
                 approved_draft_sha256,
-                user_approved=True
+                user_approved=True,
+                fuse_sensor=self.fuse_sensor,
+                risk_score=risk_score,
+                fuse_path="panel_session",
+                fuse_t=t_session
             )
 
     def reingest_source(self, project: str, source: str) -> dict[str, Any]:

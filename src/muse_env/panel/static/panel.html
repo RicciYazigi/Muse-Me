@@ -604,10 +604,10 @@
             const badgeClass = 'badge-' + (s.scope || 'local-only');
             item.innerHTML = `
               <div class="source-meta">
-                <span class="source-name">📄 ${s.source}</span>
-                <span class="badge-scope ${badgeClass}">${s.scope}</span>
+                <span class="source-name">📄 ${escapeHtml(s.source)}</span>
+                <span class="badge-scope ${escapeHtml(badgeClass)}">${escapeHtml(s.scope)}</span>
               </div>
-              <div class="source-snippet">Revisión: ${s.revision.substring(0, 16)}...</div>
+              <div class="source-snippet">Revisión: ${escapeHtml(s.revision.substring(0, 16))}...</div>
             `;
             list.appendChild(item);
           });
@@ -696,8 +696,8 @@
           const el = document.createElement('div');
           el.className = 'discrepancy-card';
           el.innerHTML = `
-            <strong>⚡ Discrepancia Identificada:</strong> Términos divergentes entre fuentes autorizadas: <code>${d.divergent_terms.join(', ')}</code>.<br>
-            <span style="color: var(--text-muted); font-size: 11px;">${d.epistemic_note}</span>
+            <strong>⚡ Discrepancia Identificada:</strong> Términos divergentes entre fuentes autorizadas: <code>${escapeHtml(d.divergent_terms.join(', '))}</code>.<br>
+            <span style="color: var(--text-muted); font-size: 11px;">${escapeHtml(d.epistemic_note)}</span>
           `;
           discContainer.appendChild(el);
         });
