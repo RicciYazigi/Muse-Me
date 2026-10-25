@@ -114,56 +114,22 @@ class MuseMeMCPServer:
         self.memory = ProjectMemory(str(p))
 
     def get_context_package(self, goal: str, project: str = "demo-latam", token_budget: int = 1500) -> Dict[str, Any]:
-        """Tool 1: Compile governed context package with token budget and exclusions."""
-        evidence = self.memory.search(project, goal, external=False)
-        excluded = []
-        
-        # Check for restricted sources
-        all_sources = self.memory.db.execute("SELECT source, scope FROM sources WHERE project=?", (project,)).fetchall()
-        for s in all_sources:
-            if s["scope"] == "restricted":
-                excluded.append({
-                    "source": s["source"],
-                    "reason": "Acceso restringido por política de confidencialidad de Muse-Me (scope='restricted')"
-                })
-            elif s["scope"] == "local-only":
-                excluded.append({
-                    "source": s["source"],
-                    "reason": "Fuente configurada como local-only; transferencia externa deshabilitada"
-                })
+        """Tool 1: Compile governed context package with token budget, vigencia filter, and reasoned exclusions."""
+        char_budget = token_budget * 4
+        search_res = self.memory.search_with_exclusions(project, goal, external=False, budget=char_budget)
+        budgeted_evidence = search_res["selected"]
+        excluded = search_res["excluded"]
+        current_chars = sum(len(ev.get("content", "")) for ev in budgeted_evidence)
 
-        if not evidence:
+        if not budgeted_evidence:
             return {
                 "status": "insufficient_evidence",
                 "project": project,
                 "goal": goal,
-                "message": f"Evidencia insuficiente: no se encontraron fuentes transferibles coincidentes en '{project}'.",
+                "message": f"Evidencia insuficiente: no se encontraron fuentes vigentes y transferibles coincidentes en '{project}'.",
                 "authorized_evidence": [],
                 "excluded_sources": excluded
             }
-
-        # Enforce approximate token budget (4 chars per token heuristic)
-        char_budget = token_budget * 4
-        current_chars = 0
-        budgeted_evidence = []
-        for ev in evidence:
-            content = ev.get("content", "")
-            if current_chars + len(content) > char_budget:
-                remaining = char_budget - current_chars
-                if remaining > 100:
-                    ev_truncated = dict(ev)
-                    ev_truncated["content"] = content[:remaining] + "\n... [Truncado por presupuesto de tokens]"
-                    ev_truncated["truncated"] = True
-                    budgeted_evidence.append(ev_truncated)
-                else:
-                    excluded.append({
-                        "source": ev["source"],
-                        "reason": f"Excluido por exceder el presupuesto de tokens ({token_budget} tokens)"
-                    })
-                break
-            else:
-                budgeted_evidence.append(ev)
-                current_chars += len(content)
 
         refs = {ev["source"]: ev["revision"] for ev in budgeted_evidence}
         mission_id = self.memory.checkpoint(project, goal, refs, capability=CAPABILITY_DELIVERABLE_PRODUCTION.id)

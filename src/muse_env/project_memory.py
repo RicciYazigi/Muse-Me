@@ -49,15 +49,31 @@ class ProjectMemory:
             ("error", "TEXT"),
             ("completed_at", "REAL")
         ]
+        cursor.execute("PRAGMA table_info(sources)")
+        src_cols = {row["name"] for row in cursor.fetchall()}
         with self.db:
             for col, col_type in cols_to_add:
                 if col not in existing_cols:
                     self.db.execute(f"ALTER TABLE missions ADD COLUMN {col} {col_type}")
+            if "status" not in src_cols:
+                self.db.execute("ALTER TABLE sources ADD COLUMN status TEXT DEFAULT 'active'")
+            if "superseded_by" not in src_cols:
+                self.db.execute("ALTER TABLE sources ADD COLUMN superseded_by TEXT")
+            self.db.execute('''CREATE TABLE IF NOT EXISTS claims (
+                id TEXT PRIMARY KEY,
+                project TEXT,
+                source TEXT,
+                revision TEXT,
+                statement TEXT,
+                epistemic_status TEXT,
+                superseded_by TEXT,
+                created_at REAL
+            )''')
 
     def close(self):
         self.db.close()
 
-    def put(self, project, source, content, scope='local-only'):
+    def put(self, project, source, content, scope='local-only', status=None, superseded_by=None):
         if not project or not source or not isinstance(content, str):
             raise ValueError('project, source y contenido textual requeridos')
         if scope not in ('local-only', 'may_transfer', 'restricted'):
@@ -66,13 +82,21 @@ class ProjectMemory:
             # Revocation removes the searchable/current content. Historical revisions
             # remain local for audit; deletion/retention is a separate future feature.
             content = ''
+        if status is None:
+            content_lower = content.lower()
+            source_lower = source.lower()
+            if any(k in content_lower for k in ("obsoleto", "deprecated", "outdated", "reemplazado en 2026", "no debe utilizarse en producci")) or                any(k in source_lower for k in ("_outdated", "_obsoleto", "v10_outdated", "v1.0_obsoleto")):
+                status = "superseded"
+            else:
+                status = "active"
+
         revision = 'evt-' + hashlib.sha256(json.dumps(
             [project, source, content, scope], ensure_ascii=False).encode()).hexdigest()[:32]
         with self.db:
             self.db.execute('INSERT OR IGNORE INTO revisions VALUES (?,?,?,?)',
                             (revision, project, source, content))
-            self.db.execute('INSERT OR REPLACE INTO sources VALUES (?,?,?,?)',
-                            (project, source, revision, scope))
+            self.db.execute('INSERT OR REPLACE INTO sources (project, source, revision, scope, status, superseded_by) VALUES (?,?,?,?,?,?)',
+                            (project, source, revision, scope, status, superseded_by))
             self.db.execute('DELETE FROM evidence_fts WHERE project=? AND source=?', (project, source))
             if scope != 'restricted':
                 self.db.execute('INSERT INTO evidence_fts VALUES (?,?,?,?)',
@@ -106,17 +130,18 @@ class ProjectMemory:
             )
         return revision
 
-    def search(self, project, query, *, external=False, budget=12000, limit=8):
+    def search(self, project, query, *, external=False, budget=12000, limit=8, allow_superseded=False):
         if budget <= 0 or limit <= 0:
             raise ValueError('presupuesto y límite deben ser positivos')
         tokens = re.findall(r'\w{2,}', query, re.UNICODE)[:64]
         if not tokens:
             return []
         match = ' OR '.join('"' + t + '"' for t in tokens)
-        rows = self.db.execute('''SELECT f.source,f.revision,f.content,s.scope
+        superseded_clause = "AND (s.status IS NULL OR s.status != 'superseded')" if not allow_superseded else ""
+        rows = self.db.execute(f'''SELECT f.source,f.revision,f.content,s.scope,s.status
             FROM evidence_fts f JOIN sources s ON s.project=f.project AND s.source=f.source
             WHERE evidence_fts MATCH ? AND f.project=? AND s.scope != 'restricted'
-            AND (?=0 OR s.scope='may_transfer') ORDER BY bm25(evidence_fts),f.source''',
+            AND (?=0 OR s.scope='may_transfer') {superseded_clause} ORDER BY bm25(evidence_fts),f.source''',
             (match, project, int(external)))
         selected = []
         for row in rows:
@@ -125,6 +150,67 @@ class ProjectMemory:
                 selected.append(item)
                 budget -= len(item['content'])
         return selected
+
+    def search_with_exclusions(self, project, query, *, external=False, budget=12000, limit=8):
+        """Context Compiler v2: Returns both selected active evidence and reasoned exclusions."""
+        tokens = re.findall(r'\w{2,}', query, re.UNICODE)[:64]
+        if not tokens:
+            return {"selected": [], "excluded": []}
+        match = ' OR '.join('"' + t + '"' for t in tokens)
+        
+        # Query all matches including restricted and superseded to build complete epistemic record
+        rows = self.db.execute('''SELECT f.source,f.revision,f.content,s.scope,s.status
+            FROM evidence_fts f JOIN sources s ON s.project=f.project AND s.source=f.source
+            WHERE evidence_fts MATCH ? AND f.project=? ORDER BY bm25(evidence_fts),f.source''',
+            (match, project))
+            
+        selected = []
+        excluded = []
+        rem_budget = budget
+        
+        for row in rows:
+            item = dict(row)
+            src_name = item["source"]
+            scope = item.get("scope", "local-only")
+            status = item.get("status", "active")
+            
+            if scope == "restricted":
+                excluded.append({
+                    "source": src_name,
+                    "reason": "Excluida por política de confidencialidad: permiso de transferencia revocado (scope='restricted')"
+                })
+            elif external and scope != "may_transfer":
+                excluded.append({
+                    "source": src_name,
+                    "reason": f"Excluida por alcance local: permiso actual es '{scope}', no autorizado para operador externo"
+                })
+            elif status == "superseded":
+                excluded.append({
+                    "source": src_name,
+                    "reason": "Excluida por vigencia: la fuente contiene directiva explícita de obsolescencia (OBSOLETO / SUPERSEDED) y está reemplazada por una versión vigente"
+                })
+            elif len(item["content"]) > rem_budget or len(selected) >= limit:
+                excluded.append({
+                    "source": src_name,
+                    "reason": f"Excluida por límite de presupuesto de contexto ({budget} caracteres máximos)"
+                })
+            else:
+                selected.append(item)
+                rem_budget -= len(item["content"])
+
+        # Also declare any project sources explicitly restricted
+        restricted_rows = self.db.execute(
+            "SELECT source FROM sources WHERE project=? AND scope='restricted'",
+            (project,)
+        ).fetchall()
+        for r_row in restricted_rows:
+            if not any(ex["source"] == r_row["source"] for ex in excluded):
+                excluded.append({
+                    "source": r_row["source"],
+                    "reason": "Excluida por política de confidencialidad: permiso de transferencia revocado (scope='restricted')"
+                })
+
+        return {"selected": selected, "excluded": excluded}
 
     def checkpoint(self, project, goal, refs, note='', capability='deliverable_production', criteria=None):
         if not refs or not goal.strip():
