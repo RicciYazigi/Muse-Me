@@ -1,5 +1,7 @@
 """Local SQLite ledger. Hashes bind recorded content; they do not prove truth."""
 from __future__ import annotations
+from pathlib import Path
+import time
 import hashlib
 import json
 import sqlite3
@@ -17,6 +19,8 @@ def digest(value):
 class EventStore:
     def __init__(self, path=":memory:"):
         self.db = sqlite3.connect(path, check_same_thread=False)
+        self.db.execute("PRAGMA journal_mode=WAL")
+        self.db.execute("PRAGMA synchronous=NORMAL")
         self.db.execute("""CREATE TABLE IF NOT EXISTS observations(
             event_id TEXT PRIMARY KEY, ts REAL, kind TEXT, application TEXT,
             content TEXT, epistemic_status TEXT, permission_scope TEXT, source_type TEXT)""")
@@ -180,3 +184,49 @@ class EventStore:
         except (ValueError, KeyError, TypeError):
             return False
 
+
+    def export_anchor(self, out_path: str | Path | None = None) -> dict:
+        """Export external cryptographic anchor for tamper-evident verification.
+        Guarantees that a local SQLite modification/truncation can be detected externally.
+        """
+        row = self.db.execute("SELECT seq, hash FROM interventions ORDER BY seq DESC LIMIT 1").fetchone()
+        if not row:
+            anchor = {
+                "version": "1.0",
+                "anchor_type": "muse_me_sha256_ledger_anchor",
+                "head_seq": 0,
+                "head_hash": "GENESIS",
+                "total_events": 0,
+                "anchored_at": time.time(),
+                "status": "empty_ledger"
+            }
+        else:
+            anchor = {
+                "version": "1.0",
+                "anchor_type": "muse_me_sha256_ledger_anchor",
+                "head_seq": row[0],
+                "head_hash": row[1],
+                "total_events": self.db.execute("SELECT COUNT(*) FROM interventions").fetchone()[0],
+                "anchored_at": time.time(),
+                "status": "active_head"
+            }
+        if out_path:
+            p = Path(out_path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(anchor, indent=2, ensure_ascii=False), encoding="utf-8")
+        return anchor
+
+    def verify_against_anchor(self, anchor_data: dict | str | Path) -> bool:
+        """Verify current database state against a previously exported external anchor."""
+        if isinstance(anchor_data, (str, Path)):
+            anchor_data = json.loads(Path(anchor_data).read_text(encoding="utf-8"))
+        if not self.verify_chain():
+            return False
+        expected_seq = anchor_data.get("head_seq", 0)
+        expected_hash = anchor_data.get("head_hash")
+        if expected_seq == 0 and expected_hash == "GENESIS":
+            return True
+        row = self.db.execute("SELECT hash FROM interventions WHERE seq=?", (expected_seq,)).fetchone()
+        if not row or row[0] != expected_hash:
+            return False
+        return True

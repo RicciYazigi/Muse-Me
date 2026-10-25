@@ -58,6 +58,14 @@ class PanelEngine:
         self.store = EventStore(str(self.db_path))
         self.observer = Win32ReadonlyObserver(opt_in=False)
 
+        if project_memory_path:
+            self.project_memory_path = Path(project_memory_path)
+        else:
+            self.project_memory_path = self.db_path.parent / "project_memory.sqlite"
+        from ..project_memory import ProjectMemory
+        self.project_memory = ProjectMemory(str(self.project_memory_path))
+        self._init_demo_project_data_if_empty()
+
         # Superficies de prueba aisladas
         self._init_surfaces()
 
@@ -733,18 +741,17 @@ class PanelEngine:
         with self._lock:
             evidence = self.project_memory.search(project, query, external=external)
             if not evidence:
-                rows = self.project_memory.db.execute(
-                    "SELECT source, revision, scope, content FROM sources s JOIN revisions r ON s.project=r.project AND s.source=r.source AND s.revision=r.revision WHERE s.project=? AND s.scope != 'restricted'",
-                    (project,)
-                ).fetchall()
-                refs = {r['source']: r['revision'] for r in rows}
-                evidence = [{"source": r['source'], "revision": r['revision'], "scope": r['scope'], "content": r['content']} for r in rows]
-            else:
-                refs = {r['source']: r['revision'] for r in evidence}
+                return {
+                    "mission_id": None,
+                    "project": project,
+                    "query": query,
+                    "capability": capability,
+                    "evidence_count": 0,
+                    "evidence": [],
+                    "error": f"Evidencia insuficiente: no se encontraron fuentes pertinentes en el proyecto '{project}' para este objetivo."
+                }
 
-            if not refs:
-                raise ValueError(f"No hay fuentes autorizadas en el proyecto '{project}' con permiso 'may_transfer'.")
-
+            refs = {r['source']: r['revision'] for r in evidence}
             mission_id = self.project_memory.checkpoint(project, query, refs, capability=capability)
             return {
                 "mission_id": mission_id,
@@ -789,6 +796,8 @@ class PanelEngine:
             if sf and sf["root_path"] and sf["relative_path"]:
                 disk_path = Path(sf["root_path"]) / sf["relative_path"]
                 if disk_path.exists():
-                    rev = self.project_memory.ingest_text(project, sf["root_path"], sf["relative_path"], scope="may_transfer")
-                    return {"status": "reingested", "project": project, "source": source, "new_revision": rev}
+                    s_row = self.project_memory.db.execute("SELECT scope FROM sources WHERE project=? AND source=?", (project, source)).fetchone()
+                    orig_scope = s_row["scope"] if s_row else "local-only"
+                    rev = self.project_memory.ingest_text(project, sf["root_path"], sf["relative_path"], scope=orig_scope)
+                    return {"status": "reingested", "project": project, "source": source, "scope": orig_scope, "new_revision": rev}
             return {"status": "skipped", "message": "No hay archivo local asociado en disco para reingestar automáticamente"}

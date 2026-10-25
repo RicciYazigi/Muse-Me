@@ -22,3 +22,5 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+testpaths = ["tests"]
+norecursedirs = ["experiments", ".local", "artifacts", "data", ".test_temp", ".test_final", ".test_memory_final"]

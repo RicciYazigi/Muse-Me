@@ -32,3 +32,17 @@ MUSE (nombre público de producto: **Muse-Me**) es un entorno de asistencia cont
 - **Suite Automatizada:** 76 passed en 20.75 s en Windows 11 con Python 3.13.4 (`tests/test_capabilities.py`, `tests/test_muse_env.py`, `tests/test_operators.py`, `tests/test_panel.py`, `tests/test_project_memory.py`, `tests/test_windows_observer.py`).
 - **Recorrido Demostrable:** `demo_muse_me.py` ejecutado al 100% con registro en `data/demo_walkthrough/walkthrough_evidence.json`.
 - **Integridad de Entrega:** Artefacto `informe_descuentos_latam_demo.md` generado en `artifacts/` con readback SHA-256 verificado.
+## Fase 7: Blindaje de Invariantes y Remediación de Auditorías (24-oct-2026)
+- **Estado:** COMPLETADO.
+- **Suite de Pruebas:** 81 passed en Windows (68 passed, 13 skipped en Linux).
+- **Hallazgos Corregidos (F01 - F10):**
+  - **F01 (P0):** `PanelEngine.__init__` ahora inicializa y cierra determinísticamente `self.project_memory`.
+  - **F02 (P0):** `execute_deliverable_action` requiere aprobación explícita `user_approved=True` (no admite `True` por defecto).
+  - **F03 (P1):** La ejecución idempotente de misiones completadas revalida el hash en disco; si el archivo fue alterado externamente, reporta `artifact_modified_on_disk` con `readback_verified=False`.
+  - **F04 (P1):** Misiones completadas quedan selladas y rechazan re-propuestas (`ValueError`).
+  - **F05 (P0 Privacidad):** `reingest_source` preserva el scope original (`restricted` o `local-only`); nunca eleva permisos a `may_transfer`.
+  - **F06 (P1):** Búsqueda léxica sin coincidencias reporta honestamente `Evidencia insuficiente` sin error SQL ni volcado masivo.
+  - **F06 (Ledger):** Implementada exportación de anclas criptográficas externas (`export_anchor` / `verify_against_anchor`) y modo SQLite WAL.
+  - **F08 (P0 XSS):** Añadido `escapeHtml` en `panel.html` para todas las plantillas dinámicas de fuentes.
+  - **F09 (P1 Path Traversal):** Rutas de `/api/open_artifact` y directorios de entregables restringidos estrictamente al espacio de trabajo.
+  - **F10 (Configuración):** `pyproject.toml` aísla los fixtures del piloto de utilidad con `testpaths = ["tests"]` y `.env.example` sincronizado con `api.meta.ai/v1`.

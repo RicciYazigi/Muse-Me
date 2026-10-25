@@ -525,6 +525,16 @@
   <div id="toast" class="toast"></div>
 
   <script>
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const sessionToken = document.querySelector('meta[name="session-token"]')?.getAttribute('content') || '';
     let currentCapability = 'evidence_comparison';
     let currentMissionId = null;

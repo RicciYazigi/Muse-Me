@@ -203,8 +203,21 @@ class PanelHTTPRequestHandler(BaseHTTPRequestHandler):
             if path == "/api/open_artifact":
                 path_str = body.get("path", "")
                 target_p = Path(path_str).resolve()
-                if not target_p.exists():
-                    raise FileNotFoundError("Artefacto no encontrado")
+                root_p = Path.cwd().resolve()
+                # Security allowlist: must reside inside project working directory or artifacts/data subdirs
+                if not (target_p.is_relative_to(root_p) or target_p.is_relative_to(root_p / "artifacts") or target_p.is_relative_to(root_p / "data")):
+                    self._set_headers(403)
+                    self.wfile.write(json.dumps({"error": "Acceso denegado: la ruta del artefacto está fuera de las carpetas de trabajo autorizadas."}).encode("utf-8"))
+                    return
+                # Prevent disclosure of sensitive configuration files
+                if target_p.name in (".env", "credentials.json") or ".git" in target_p.parts:
+                    self._set_headers(403)
+                    self.wfile.write(json.dumps({"error": "Acceso denegado: no se permite visualizar archivos de configuración sensible."}).encode("utf-8"))
+                    return
+                if not target_p.exists() or not target_p.is_file():
+                    self._set_headers(404)
+                    self.wfile.write(json.dumps({"error": "Artefacto no encontrado en disco."}).encode("utf-8"))
+                    return
                 txt = target_p.read_text(encoding="utf-8", errors="replace")
                 self._set_headers(200)
                 self.wfile.write(json.dumps({"status": "ok", "path": str(target_p), "content": txt}, ensure_ascii=False).encode("utf-8"))

@@ -75,6 +75,10 @@ def compare_evidence(memory, mission_id: str, operator_override=None) -> Dict[st
     and validates reference provenance against authorized package digests.
     """
     state = memory.resume(mission_id)
+    if state.get("state") == "completed":
+        raise ValueError(f"Misión {mission_id} ya se encuentra completada. Cree una nueva misión para generar propuestas adicionales.")
+    if state.get("state") == "completed":
+        raise ValueError(f"Misión {mission_id} ya se encuentra completada. Cree una nueva misión para generar propuestas adicionales.")
     if state["needs_review"]:
         raise ValueError(f"Misión {mission_id} requiere revisión: fuentes modificadas o no disponibles ({state['changed_sources']})")
 
@@ -181,6 +185,8 @@ def propose_deliverable(
     Prepares the draft, attaches verified citations, and registers the proposal hash for Gate 2.
     """
     state = memory.resume(mission_id)
+    if state.get("state") == "completed":
+        raise ValueError(f"Misión {mission_id} ya se encuentra completada. Cree una nueva misión para generar propuestas adicionales.")
     if state["needs_review"]:
         raise ValueError(f"Misión {mission_id} requiere revisión: fuentes modificadas ({state['changed_sources']})")
 
@@ -275,7 +281,7 @@ def execute_deliverable_action(
     target_dir: str | Path,
     filename: str,
     approved_draft_sha256: str,
-    user_approved: bool = True
+    user_approved: bool = False
 ) -> Dict[str, Any]:
     """Capability B (Phase 2): Execute approved local file creation.
     - Enforces Gate 2 approval and non-duplication
@@ -290,19 +296,33 @@ def execute_deliverable_action(
     if state["needs_review"]:
         raise ValueError(f"Acción bloqueada: las fuentes de la misión {mission_id} cambiaron y requieren nueva revisión.")
 
-    # Check for idempotent completed state
+    # Check for idempotent completed state with disk readback re-verification (F03)
     if state.get("state") == "completed":
-        # Check if already executed
         existing_path = state.get("artifact_path")
         existing_hash = state.get("artifact_hash")
         if existing_path and Path(existing_path).exists():
+            current_disk_content = Path(existing_path).read_text(encoding="utf-8")
+            current_disk_hash = sha256_digest(current_disk_content)
+            if current_disk_hash != existing_hash:
+                return {
+                    "mission_id": mission_id,
+                    "status": "artifact_modified_on_disk",
+                    "message": "ALERTA: El archivo en disco fue modificado externamente después de la compleción.",
+                    "artifact_path": existing_path,
+                    "recorded_hash": existing_hash,
+                    "current_disk_hash": current_disk_hash,
+                    "readback_verified": False,
+                    "current_integrity": False,
+                    "user_approved": True
+                }
             return {
                 "mission_id": mission_id,
                 "status": "already_completed_idempotent",
-                "message": "La misión ya fue completada previamente. No se duplicó la escritura.",
+                "message": "La misión ya fue completada previamente. Hash en disco verificado intacto.",
                 "artifact_path": existing_path,
                 "artifact_hash": existing_hash,
                 "readback_verified": True,
+                "current_integrity": True,
                 "user_approved": True
             }
 
