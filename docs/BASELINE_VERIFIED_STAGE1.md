@@ -1,3 +1,7 @@
+> [!NOTE]
+> **Documento de Evidencia Histórica (Etapa 1 - 21 de octubre de 2026).**  
+> El corte actual verificado corresponde a `2f0b3dd` con 92 pruebas pasando al 100%. Consultar [docs/STATUS.md](STATUS.md). Los enlaces a registros locales corresponden a evidencia archivada del entorno de coarquitectura.
+
 # Referencia de Línea Base Verificada — Etapa 1 (Flujo Asistido Win32 Nativo)
 
 **Fecha:** 2026-10-21  

@@ -1,7 +1,7 @@
-﻿# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.so
 
 # Caches and test artifacts
@@ -48,9 +48,13 @@ runs/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-$RECYCLE.BIN/
+.BIN/
 .DS_Store
 
-BITACORA_HISTORIAL_CONVERSACION.md
+# Historical conversation logs and private memory pointers
+*HISTORIAL*
+*BITACORA*
+*CONVERSACION*
+.private_context_pointer*
 
 artifacts/

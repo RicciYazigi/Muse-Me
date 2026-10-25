@@ -1,28 +1,22 @@
-# Backlog con criterios de aceptación
+# Backlog de Producto y Capacidades Verificables
 
-Cada capacidad debe resolver una tarea observada, con resultado verificable.
+Este backlog registra el estado real de las capacidades de Muse-Me, distinguiendo lo implementado en el corte `2f0b3dd` de las prioridades de desarrollo para la asistencia residente.
 
-| Prioridad | Capacidad | Aceptación | Estado |
-|---|---|---|---|
-| P0 | Memoria por proyecto | Reabrir conserva misión y referencias; cambio importado invalida exportación | Implementado por CLI |
-| P0 | Recuperación local | Aislar proyectos y permisos; respetar presupuesto; usar objetivo | Implementado, búsqueda léxica |
-| P0 | Inferencia Meta | Respuesta real guardada con modelo, uso, duración y fuentes autorizadas | Adaptador conectado a CLI; ensayo real pendiente |
-| P0 | Ficha del proyecto | Usuario encuentra objetivo, evidencia, estado y próximo paso sin abrir logs | Pendiente; panel heredado solo cubre revisión Win32 |
-| P0 | Afirmaciones respaldadas | Cada decisión referencia una revisión y distingue observación/inferencia | Pendiente |
-| P0 | Primera misión útil | Entregable correcto en tarea inédita; comprobación independiente | Pendiente |
-| P0 | Medición humana | Comparación con modelo y recuperación simples, tiempos observados | Protocolo listo; medición pendiente |
-| P1 | Contradicciones | Expone fuentes incompatibles sin elegir por fecha automáticamente | Pendiente |
-| P1 | Tool calling | Solicitudes validadas; límites de acciones; estados persistentes; resultado comprobado | Pendiente |
-| P1 | Documentos | Citas preservan página/sección y tablas necesarias | Evaluar MarkItDown/Docling |
-| P1 | Actualización automática | Detectar modificación/borrado; evitar aceptar lecturas parciales | Pendiente |
-| P1 | Olvido y retención | Borrado explícito de revisiones, derivados y backups según alcance | Pendiente |
-| P1 | Revisión Meta de otra propuesta | Detectar error sembrado frente a evaluador independiente; medir coste | Experimento pendiente |
-| P2 | Recuperación híbrida | Superar BM25 en consultas nuevas con sinónimos sin empeorar permisos | Pendiente de evidencia |
-| P2 | Varias aplicaciones | Adaptadores probados por aplicación y versión; identidad de destino revalidada | Win32 de prueba heredado; UIA pendiente |
-| P2 | Colaboración | Aislamiento por usuario y revocación transitiva en todos los derivados | Pendiente |
-| P2 | Agentes especializados | Superar un único agente con mismo presupuesto | No justificado todavía |
-| P2 | Fuse temporal | Aportar utilidad frente a políticas simples, con trazas reales | Investigación separada |
+---
 
-Dependencias críticas: inferencia → afirmaciones estructuradas → misión con herramientas → evaluación humana. La ingestión documental y el diseño de interfaz pueden avanzar independientemente. No hace falta completar toda la tabla para participar; sí describir con claridad qué parte se demuestra.
+## Estado Actual de Capacidades
 
-La ruta CLI requiere un operador local confiable. Para producto: convertir la aprobación en un registro persistente ligado a paquete, modelo y destino; revalidar fuentes al momento del envío; definir retención de respuestas y evitar errores de concurrencia. Antes de ejecutar código generado, incorporar aislamiento real del proceso y permisos específicos de herramientas.
+| Prioridad | Capacidad | Criterio de Aceptación | Estado en Corte 2f0b3dd |
+| :--- | :--- | :--- | :--- |
+| **P0** | Memoria por proyecto | Reabrir conserva misiones y referencias; cambios en disco invalidan exportaciones previas. | **Implementado** en `ProjectMemory` e integrado en `PanelEngine`. |
+| **P0** | Recuperación local determinista | Aislamiento por proyecto y permisos; respeto de presupuesto; búsqueda FTS5. | **Implementado** (búsqueda léxica SQLite/FTS5; reporte de evidencia insuficiente). |
+| **P0** | Ficha de proyecto y panel web | Visualización unificada de fuentes, permisos, vista previa y compuertas. | **Implementado** en `run_panel.py`. |
+| **P0** | Inserción y readback nativo | Escritura en control Windows y verificación inmediata por lectura de retorno. | **Implementado** para controles Win32 `EDIT` de laboratorio. |
+| **P0** | Inferencia Meta real | Respuesta real de modelo guardada con uso, latencia y fuentes autorizadas en ledger. | **Pendiente** (adaptador HTTP implementado; ensayo con cuenta real pendiente). |
+| **P0** | Cierres de autoridad en demo | Destinos relativos acotados; fuentes borradas excluidas en MCP; aprobación persistente exacta. | **Pendiente** (Hito H1 del roadmap). |
+| **P1** | Integración Fuse temporal | Contención de riesgo acumulado en operaciones mutadoras. | **Implementado experimentalmente** (sensor conectado a panel e inserciones; DEGRADE bloquea mutaciones). |
+| **P1** | Detección de contradicciones | Exponer fuentes incompatibles sin elegir automáticamente por fecha. | **Implementado** en capacidad local `evidence_comparison`. |
+| **P1** | Asistencia residente acotada | Observación de dos aplicaciones reales; memoria temporal de episodios; invocación rápida. | **Pendiente** (Hito H3 del roadmap). |
+| **P1** | Evaluación humana medida | Comparación empírica frente a contexto reunido manualmente con tiempos observados. | **Pendiente** (Hito H5 del roadmap; protocolo diseñado). |
+| **P2** | Adaptadores UIA generales | Compatibilidad con aplicaciones de escritorio arbitrarias mediante UI Automation. | **Pendiente** (requiere investigación por aplicación). |
+| **P2** | Colaboración multiusuario | Aislamiento por usuario y revocación transitiva. | **Futuro** (no contemplado en alcance inmediato). |

@@ -1,55 +1,35 @@
-# Qué sería Muse Environment
+# Cómo Funciona Muse-Me
 
-Una aplicación de escritorio con un motor local y un visor. El visor es la interfaz;
-el motor selecciona contexto y conserva memoria; Muse es un proveedor de inferencia.
+Muse-Me conecta la actividad en aplicaciones autorizadas con memoria contextual, modelos de lenguaje y herramientas de acción bajo compuertas de seguridad formales.
 
-## Recorrido del usuario que se quiere construir
+---
 
-1. Habilitas aplicaciones o carpetas concretas y puedes pausar la observación.
-2. Trabajas normalmente; el motor registra eventos permitidos y propone episodios.
-3. Invocas «Responder con Muse» mediante un atajo o botón.
-4. Revisas el contexto elegido. Se comprueba autorización para procesarlo en Meta.
-5. Muse devuelve un borrador con fuentes identificables.
-6. Revisas y apruebas ese texto para un destino concreto.
-7. La aplicación verifica el destino y la inserción; la memoria conserva el resultado.
+## 1. El Recorrido Objetivo (Asistencia Residente)
 
-La observación local y las llamadas a Muse tienen ritmos distintos. Capturar no
-autoriza automáticamente conservar indefinidamente, transferir ni ejecutar acciones.
-Los permisos siguen aplicándose cuando el sensor experimental Fuse está apagado.
+1. **Autorización:** El usuario selecciona qué aplicaciones o carpetas pueden observarse y qué alcance tiene cada una (`may_transfer`, `restricted`, `local-only`). Puede pausar la observación en cualquier momento.
+2. **Observación y Episodios:** Un observador local registra cambios permitidos y los agrupa en episodios temporales con caducidad. Se registra la procedencia y la vigencia de cada dato.
+3. **Interpretación Preparada:** Ante un hito significativo, el modelo interpreta el episodio y prepara opciones de ayuda concretas con evidencia y efecto previsto.
+4. **Invocación:** El usuario invoca Muse-Me mediante un gesto o atajo rápido cuando necesita asistencia.
+5. **Revisión y Compuerta 1:** El usuario revisa la propuesta. Si requiere inferencia externa, la compuerta `approve_transfer` verifica que no se incluyan fuentes `restricted`.
+6. **Aprobación y Compuerta 2:** El usuario revisa y aprueba el borrador exacto para un destino específico (`approve_insertion`).
+7. **Acción y Comprobación:** La aplicación ejecuta la acción en el destino autorizado y realiza una comprobación de lectura inmediata (`readback`). La memoria registra el resultado.
 
-## Qué hace esta versión
+---
 
-La demo recorre observaciones simuladas, crea episodios por reglas, selecciona
-contexto, usa un proveedor local extractivo y simula aprobación e inserción. Guarda
-eventos en SQLite y comprueba que siguen presentes tras cerrar y reabrir la base.
-También demuestra que un STOP opcional bloquea una inserción por la misma interfaz.
+## 2. Lo que Hace el Prototipo Actual
 
-El visor HTML es estático y de sólo lectura: presenta esa ejecución. No observa
-ventanas, no incorpora un diálogo de consentimiento real y no envía contenido.
+En la versión actual (`2f0b3dd`):
+- **Memoria y Contexto:** `ProjectMemory` ingesta archivos locales, calcula hashes SHA-256, versiona revisiones y realiza búsquedas léxicas mediante SQLite/FTS5.
+- **Capacidades Locales:** Las opciones `Comparar Evidencia` y `Producir Entregable` operan mediante **reglas y plantillas deterministas locales**, no inferencia de modelo de lenguaje.
+- **Superficie de Escritorio:** Opera sobre controles `EDIT` de prueba de laboratorio en Windows mediante Win32 API (`SendMessageW` / `WM_SETTEXT` / `WM_GETTEXT`).
+- **Operador:** Funciona mediante el operador asistido por archivos (`AntigravityAssistedOperator`): exporta `request.json`, importa la propuesta estructurada, valida hashes y consume atómicamente la misión.
+- **Sensor Fuse:** TrajectorySensor integrado experimentalmente. Si el riesgo acumulado alcanza el umbral de `DEGRADE`, permite lecturas pero bloquea escrituras e inserciones.
+- **Configuración:** La aplicación lee `MODEL_API_KEY` del entorno del proceso; **no carga automáticamente archivos `.env`**.
 
-## Motor preparado, integración real pendiente
+---
 
-El cliente Meta interpreta respuestas HTTP y exige autorización previa ligada al
-paquete y al proveedor. Se verifica con HTTP simulado; no se ha probado con una cuenta
-real. Aún no maneja imágenes, herramientas ni conversación encadenada.
+## 3. Fronteras de Seguridad y Confianza
 
-El adaptador de Windows debe comprobar en cada aplicación qué texto y controles
-expone UIA, limitar captura y retención y validar identidad y lectura posterior a
-la inserción. La interfaz `FakeSurface` demuestra el contrato con una lista en memoria.
-El texto observado se trata como evidencia y no como instrucciones para ampliar permisos.
-
-## Fronteras de confianza
-
-`approve_transfer` y `approve_insertion` representan decisiones de la interfaz u
-operador autorizado; no son herramientas que se deban entregar al modelo. Una
-aplicación real debe conectarlas con su política y UI autenticada. En la demo las
-invoca un script y esto se etiqueta como simulado. Un hash no acredita consentimiento humano.
-
-La aprobación de inserción queda ligada al borrador exacto, ID de destino y un
-intento único. El adaptador real debe revalidar el destino dentro de su propia
-operación para impedir que un cambio de foco inserte en otro control.
-
-La cadena de registro incluye fuentes, payload, borrador y aprobación. Detecta
-alteraciones de ese contenido; no es almacenamiento inmutable ni certificación de
-verdad o de ausencia de borrado por un administrador. Las bases del P0 anterior
-no se migran automáticamente: se conservan como evidencia histórica separada.
+- **Compuertas Formales:** `approve_transfer` y `approve_insertion` son decisiones del operador humano o la política del sistema; nunca herramientas que se deleguen al modelo.
+- **Integridad Criptográfica:** Todos los paquetes y borradores se identifican mediante digests SHA-256. Un hash acredita integridad contra alteraciones; no certifica verdad semántica ni consentimiento humano.
+- **Aislamiento de Secretos:** Fuentes marcadas como `restricted` son excluidas rigurosamente de transferencias hacia modelos o herramientas externas.

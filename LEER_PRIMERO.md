@@ -1,47 +1,50 @@
-# MUSE: ampliación para explorar utilidad real
+# Muse-Me: Guía de Inicio Rápido
 
-La visión, escenarios, alternativas de código y prioridades están en [Panorama y estrategia](docs/PANORAMA_Y_ESTRATEGIA.md).
+Bienvenido a Muse-Me. Este repositorio contiene la base experimental para un asistente contextual residente en Windows.
 
-El núcleo heredado sigue descrito en README.md. Sus reportes históricos no son pruebas nuevas. La ampliación usa una memoria independiente por CLI, pendiente de integración con el panel.
+---
 
-## Demostración local sin API
+## 1. Documentos Principales
 
-Desde esta carpeta, con Python 3.10+:
+- **[README.md](README.md):** Visión del producto, estado actual, límites y cómo probarlo.
+- **[docs/STATUS.md](docs/STATUS.md):** Única fuente pública del estado técnico vigente (commit `2f0b3dd` verificado con 92 pruebas).
+- **[docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md):** Guión de demostración de 90-120 segundos.
+- **[docs/ROADMAP.md](docs/ROADMAP.md):** Prioridades de desarrollo para la asistencia residente (H0 a H5).
+- **[docs/COMO_FUNCIONA.md](docs/COMO_FUNCIONA.md):** Explicación del ciclo objetivo y los mecanismos actuales.
 
+---
+
+## 2. Cómo Probar el Prototipo en Windows
+
+### Requisitos
+- Windows 10 o 11 (para controles Win32 nativos).
+- Python 3.11, 3.12 o 3.13 (CI cubre estas versiones).
+
+### Instalación
 ```powershell
-python demo_projects.py
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
-Genera validation/scenarios.json con cuatro escenarios sintéticos: software, investigación, operaciones y trabajo creativo. Comprueba búsqueda, persistencia, detección de cambio tras reingestión y bloqueo de exportación desactualizada. No mide respuestas de IA.
+### Opción A: Panel Local Interactivo
+El panel local integra `ProjectMemory`, selección de fuentes, políticas de seguridad y controles de laboratorio Win32:
+```powershell
+.\.venv\Scripts\python.exe run_panel.py
+```
+Abre automáticamente el navegador en `http://localhost:8080`.
 
-## Probar con archivos propios
+### Opción B: Demostración Automatizada por Consola
+Para un recorrido determinista rápido sin interfaz gráfica:
+```powershell
+.\.venv\Scripts\python.exe demo_muse_me.py
+```
+Este script genera datos de prueba sintéticos en una carpeta aislada y comprueba las compuertas de seguridad y la escritura con readback verificado.
 
-Indicar únicamente archivos que se quieran incluir. La ruta raíz es una carpeta autorizada; usar una carpeta por proyecto.
+---
+
+## 3. Ejecución de Pruebas Automatizadas
 
 ```powershell
-python project_cli.py ingest mi-proyecto C:\ruta\autorizada brief.md notas.txt --scope may_transfer
-python project_cli.py search mi-proyecto "preparar propuesta" --external --checkpoint
-python project_cli.py resume ID_MISION
-python project_cli.py preview ID_MISION
+.\.venv\Scripts\python.exe -m pytest tests -v
 ```
-
-El último comando muestra exactamente el paquete y su SHA-256. Solo si se desea enviarlo a Meta:
-
-```powershell
-python project_cli.py generate ID_MISION --approve-payload-sha256 HASH_MOSTRADO
-```
-
-Requiere MODEL_API_KEY en el entorno. Usa muse-spark-1.3; admite --model. Devuelve un borrador por consola, sin ejecutar ni insertar acciones. Esta ruta no se ha validado contra API real. Para conservarlo, redirigir la salida a un archivo elegido. Las aprobaciones de CLI son responsabilidad del operador; no constituyen una interfaz multiusuario.
-
-Repetir ingest cuando cambie un documento y luego resume para ver qué misiones necesitan revisión. No hay observación automática de archivos.
-
-## Pruebas
-
-Con pytest y numpy disponibles:
-
-```powershell
-$env:PYTHONPATH = "$PWD\src"
-python -m pytest tests -q
-```
-
-ProjectMemory añade pruebas de persistencia, revocación, aislamiento de proyectos, presupuesto y límites de ruta. La evidencia de esta sesión queda en validation/.
+El corte verificado reproduce **92 pruebas pasando al 100%**.

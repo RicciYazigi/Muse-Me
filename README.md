@@ -1,125 +1,94 @@
-﻿# Muse-Me
+# Muse-Me
 
-> **MUSE Environment (Muse-Me):** A contextual assistance environment that connects authorized user activity, project memory, models, and tools to help understand, decide, create, and act according to user goals and permissions.
+A personal assistant that understands the work you choose to share with it.
 
----
+I started Muse-Me because I kept moving between code, documents and conversations, then explaining the same context again in each AI chat. I want an assistant I can call while working: one that can bring together the relevant information and help me do something with it.
 
-## 1. Vision and Problem Statement
+The goal is to follow activity in selected applications with permission, maintain a temporary working memory and prepare useful help in the background. When called, Muse-Me should offer concrete options based on the task: compare conflicting information, gather references, draft a revision or prepare an action for review. Project continuity is one use case; the same approach could support creative work, research and operations.
 
-Modern knowledge work is fragmented across documents, code editors, communication apps, and browsers. Existing AI assistants either:
-1. Lack contextual awareness beyond the current chat window.
-2. Silently ingest background desktop activity without granular user authorization or provenance verification.
+**This repository is an experimental foundation for that experience. The resident assistant and live Meta integration are still being built.**
 
-**Muse-Me** solves this with an auditable, human-in-the-loop desktop environment:
-- **Zero Surprises / Policy-Enforced Gates:** The operator (model or human) proposes; the application enforces permissions, cryptographic gates, and local writes. Content from an observed source can never grant itself permissions or trigger tools.
-- **Two Distinct Core Capabilities on One Engine:**
-  - **Evidence Comparison:** Analyzes authorized sources to answer queries, highlighting contradictions and citing exact source digests without prematurely favoring the newest document.
-  - **Deliverable Production:** Generates briefs, reports, or plans in Markdown, enforces a two-gate authorization cycle, performs exact local file creation, and verifies contents via cryptographic readback checks.
-- **Persistent Project Memory:** Retains missions, checkpoints, and source revisions using local SQLite/FTS5 storage. Detects stale context when source files change.
+## What works today
 
----
+- A local review panel with project memory, source selection and permission controls.
+- SQLite/FTS5 retrieval, source revisions and persistent mission checkpoints.
+- Controlled Windows observation and insertion, tested with native Win32 EDIT controls. Compatibility with arbitrary desktop applications has not been established.
+- A file-based assisted operator workflow: export a request, import a proposal, review it and verify insertion by reading the target back.
+- Deterministic evidence comparison and Markdown generation. These currently use rules and templates, not model reasoning.
+- A small MCP stdio interface for context packages and proposal operations. It is an entry point to the environment, not the whole product.
+- Experimental temporal containment using a vendored Fuse core, connected to selected write and insertion paths.
 
-## 2. Architecture and Data Flow
+## Try the existing prototype
 
-```
-Authorized Sources ──► Relevant Context ──► User Intent / Capability
-                                                    │
-                                                    ▼
-Memory / Ledger  ◄── Verification ◄── Local Action ◄── Gate 2 (Insertion) ◄── Operator Proposal ◄── Gate 1 (Transfer)
-```
+Use Windows for the native desktop workflows. CI currently covers Windows and Ubuntu with Python 3.11, 3.12 and 3.13. The package declares Python 3.10+, but 3.10 and macOS are not covered by that CI matrix.
 
-1. **Gate 1 (`approve_transfer`):** Cryptographically binds the prompt and selected context into a deterministic `request.json` package. Excludes any `restricted` sources before outbound transmission.
-2. **Operator:** Generates a structured proposal (`response.json`) bound to the exact request hash and citations.
-3. **Gate 2 (`approve_insertion` / `approve_action`):** The human operator inspects the proposed draft. Once approved, the exact artifact is written to the authorized target directory or inserted into the native surface.
-4. **Verification & Ledger:** The system performs a readback check (hashing written files or issuing `WM_GETTEXT` on Win32 controls), records the entry into an immutable ledger, and marks the mission consumed to prevent replay attacks.
-
----
-
-## 3. Current Core Capabilities
-
-| Capability | Purpose | Gate Verification | Readback Check |
-| :--- | :--- | :--- | :--- |
-| **Evidence Comparison** | Cross-source synthesis, contradiction detection, and citation audit. | Gate 1 (Transfer) | Semantic & source hash validation |
-| **Deliverable Production** | Markdown brief, report, or specification generation. | Gate 1 + Gate 2 (Insertion) | SHA-256 file readback check |
-| **Project Memory** | Multi-project isolation, FTS5 lexical retrieval, revision tracking, and change invalidation. | Checkpoint validation | Ledger chain verification |
-| **Win32 Native Surface** | Opt-in read-only observation and direct control insertion via Win32 API. | HWND/PID binding + Gate 2 | `WM_GETTEXT` verification |
-
----
-
-## 4. Installation and Setup
-
-### Prerequisites
-- Python 3.10+ (tested on Python 3.11, 3.12, 3.13)
-- Windows 11 / 10 for native Win32 controls and observation (cross-platform core runs on Linux/macOS)
-
-### Install Dependencies
-```bash
-# Clone the repository
+```powershell
 git clone https://github.com/RicciYazigi/Muse-Me.git
 cd Muse-Me
-
-# Install package and development tools
-pip install -e ".[dev]"
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe run_panel.py
 ```
 
-### Configuration (Optional Meta / Llama API)
-Copy the example environment file and configure your API credentials if using real cloud inference:
-```bash
-cp .env.example .env
-```
-If `.env` is absent or `MODEL_API_KEY` is not set, Muse-Me automatically operates in **Assisted Operator** or **Reproducible Demonstration** mode with explicit visual labeling.
+The panel starts on loopback, normally port 8080, and opens a browser. It creates controlled demonstration windows on Windows. These are test surfaces, not automatic access to all your applications.
 
----
+For a deterministic console demonstration:
 
-## 5. Quickstart and Demonstration
-
-### Unified Local Review Panel
-Launch the local review interface (running locally on `http://127.0.0.1:8080`):
 ```powershell
-python run_panel.py
+.\.venv\Scripts\python.exe demo_projects.py
+.\.venv\Scripts\python.exe demo_muse_me.py
 ```
-*On Windows, you can also run `.\Start-ReviewPanel.ps1` or double-click `ABRIR_PANEL.cmd`.*
 
-### Project Memory CLI Demonstration
-Run the multi-project synthetic scenario suite:
+These scripts write local demo data. `demo_muse_me.py` resets its own demonstration database and creates synthetic sources and an output artifact. Use a separate checkout for demos. No Meta key is required, and their output is not a measurement of AI quality or human productivity.
+
+## Meta integration
+
+The text HTTP adapter lives in `src/muse_env/providers.py`. It reads `MODEL_API_KEY` from the process environment. The repository does not automatically load `.env` files. The provider's endpoint and model defaults still need to be verified against the API available to the hackathon account.
+
+The panel currently uses the assisted operator workflow; setting a key does not switch its comparison and report capabilities to Meta inference. Its connection indicator can also mislabel configured credentials as connected. A live Meta request has not been independently demonstrated for the reviewed version.
+
+The next increment will connect real inference to authorized context and retain the original request and response for evaluation.
+
+## Fuse's role
+
+[Fuse AI](https://github.com/RicciYazigi/fuse-ai) accumulates externally supplied risk scores over a trajectory. Muse-Me uses a vendored core from the FuseGate edition through `TrajectorySensor`.
+
+The controller can permit authorized actions, restrict mutations in DEGRADE, or stop actions in STOP. The panel's default sensor uses thresholds 0.02 / 0.04; an explicitly supplied default `GatePolicy` uses 0.04 / 0.08. This configuration difference needs consolidation.
+
+Current panel signals include a fixed insertion score and permission-based heuristics. The integration tests exercise the controller; they do not establish reliable detection of harmful desktop activity. Fuse can restrict an action, but it cannot grant permission.
+
+## Evidence and limits
+
+A separate local review of commit `2f0b3dd3ab0302e6787d410430ddff1f46372864` reproduced **92 passing tests on Windows/Python 3.13**, with no failures or skips. [CI for that commit](https://github.com/RicciYazigi/Muse-Me/actions/runs/40162257110) also completed successfully.
+
 ```powershell
-python demo_projects.py
-```
-This demonstrates project isolation, full-text retrieval, change detection upon file re-ingestion, and automatic invalidation of stale checkpoints across 4 diverse scenarios.
-
-### Assisted Native Win32 Flow
-Execute an end-to-end mission inserting directly into a real Win32 `EDIT` control:
-```powershell
-python run_operator_assisted_flow.py
+.\.venv\Scripts\python.exe -m pytest tests -v
 ```
 
----
+Passing tests are not a security certification. The reviewed version still has known gaps involving relative output paths, deleted sources served through MCP, and persistent approvals bound to the exact operation and destination. Use the prototype with non-sensitive test data and controlled targets while those routes are corrected.
 
-## 6. Testing and Verification
+The ledger and content hashes support integrity checks; they are not immutable storage, signatures or proof that a claim is true. External anchors require a separately trusted reference. The historical utility pilot demonstrates transport and verification; independent generation for its recorded condition B was not established, and no human productivity improvement has been demonstrated.
 
-Run the comprehensive automated test suite (85 tests covering core logic, double gates, tamper-evident ledger, memory, and surfaces):
-```bash
-python -m pytest tests -v
-```
+## What comes next
 
-### Continuous Integration (CI)
-GitHub Actions verifies every push across:
-- **Windows:** Validates all 85 tests including Win32 native controls, cryptographic anchors, and regression invariants.
-- **Linux:** Validates 72 tests covering context building, project memory, gate authorization, and cryptography, cleanly skipping 13 Win32-specific desktop tests (72 passed, 13 skipped).
+1. Close the known execution and source-freshness defects.
+2. Connect real Meta inference with visible errors and recorded inputs and outputs.
+3. Build a resident activity-to-assistance loop across two authorized applications.
+4. Separate observation intensity, inference budget and action permissions.
+5. Evaluate useful results, user effort, interruptions and cost against the same model with manually assembled context.
 
----
+Temporary memory, confirmed long-term preferences, automation suggestions and specialized agents belong to that direction. Multiuser collaboration is future work, not an implemented feature.
 
-## 7. Meta API Status, Epistemic Honesty, and Architectural Boundaries
+## Repository map
 
-- **Meta Adapter:** An integration adapter (`src/muse_env/providers/meta.py`) connects to Llama API endpoints. When valid credentials exist in `.env`, it issues bounded requests and logs prompt/response digests.
-- **Epistemic Honesty:** When running without active API keys, the system explicitly marks mode as `assisted_operator` or `fixture_demo`. It **never** fabricates AI responses, latency figures, or human effort metrics. Unobserved measurements are strictly reported as `null`.
-- **Heuristic Currency vs Canonical Metadata:** Currency filtering currently operates via *explicit directive heuristics (v0)*. Canonical currency is established through explicit schema declarations (`status`, `superseded_by`). Automated cross-claim validation via the schema `claims` table is staged for future semantic integration.
-- **Governed MCP Boundary:** The Model Context Protocol server (`src/muse_env/mcp_server.py`) strictly compiles contextual packages with `external=True`, guaranteeing that `local-only` documents are excluded from outbound tools and isolated to local verification.
-- **Multi-Tier Thermal Containment (FuseGate):** `TrajectorySensor` enforces dual thresholds (`degrade_threshold=0.04`, `stop_threshold=0.08`). In `DEGRADE`, read and observe actions are permitted, but writes, insertions, and context sharing are strictly suspended.
-- **Desktop Gesture Surface:** `src/muse_env/gesture.py` currently functions as a single-shot quick desktop invocation tool. Resident hotkey loops (`RegisterHotKey`) are scheduled following native visual accessibility driver work.
+- `src/muse_env/`: memory, context, operators, controls and panel.
+- `tests/`: automated checks and regression cases.
+- `experiments/utility_pilot/`: historical experimental harness, not proof of comparative benefit.
+- `demo_projects.py` and `demo_muse_me.py`: synthetic demonstrations.
+- `docs/`: design and historical reports. Several documents still describe earlier stages and need reconciliation with the reviewed state above.
 
----
+The vendored Fuse code retains its own license under `src/muse_env/_fusible_vendor/LICENSE`. This does not specify licensing for the rest of the repository, which currently has no root license file.
 
-## 8. Spanish Summary / Resumen en Español
+## En español
 
-**Muse-Me** es un entorno de escritorio auditable para asistencia contextual con modelos de IA. Permite comparar evidencia documental y generar entregables locales bajo un modelo de doble autorización (Compuerta 1 para transferencia de contexto sin datos restringidos; Compuerta 2 para aprobación de contenido antes de su escritura local). Incluye memoria de proyectos con SQLite FTS5, detección de cambios en archivos fuente y controles nativos Win32 con comprobación criptográfica de integridad.
+Muse-Me busca acompañar el trabajo que autorizas a observar y ofrecer ayuda concreta cuando lo llamas. Esta versión contiene parte de la memoria, el panel y los controles necesarios; todavía falta convertirlos en una experiencia residente con modelos Meta reales. Las demostraciones actuales verifican mecanismos y no deben confundirse con un asistente terminado.

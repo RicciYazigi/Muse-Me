@@ -1,23 +1,25 @@
-# Roadmap Muse Environment
-## P0 — Prueba de cadena (ESTE repo, sandbox)
-Observer simulado → episodios → Context Builder → Invoke con stub → inserción aprobada →
-Fuse A/B → cadena SHA-256. **Puerta:** `scripts/verify_all.sh` verde. ✅ condición de la propuesta.
-## P0.0.2 — Correcciones locales
-Identidad persistente, permisos completos, transferencia autorizada antes de la API,
-aprobación del borrador exacto y destino, HTTP Meta comprobado con mock, cadena de
-contenido y STOP conectado. Visor estático y todas las superficies simuladas.
-Ver `COMO_FUNCIONA.md` para fronteras y contratos.
-## P1 — Windows + acceso Meta disponible
-- Adaptadores UIA reales en 3 superficies controladas (docs/ADAPTADORES_WINDOWS.md).
-- `MetaMuseProvider` con clave real: verificar imagen + structured output + coste por invocación.
-- Medición H5: ventana-sola vs transversal, con tareas-trampa («la memoria NO debe usarse»)
-  y auditoría de fugas = 0. Métricas: exactitud ciega, esfuerzo del usuario, omisiones/invenciones.
-- **Puerta de muerte:** si UIA no expone las superficies o lo transversal no mejora, se registra
-  el negativo; no se maquilla.
-## P2 — Adaptación
-- Episodios `inferred` confirmables en el visor; memoria episódica persistente entre sesiones.
-- Superficie Propose: UNA categoría (automatización candidata) con contrato de verificación.
-- Fuse A/B con trazas reales; auto-mejora solo como propuesta → holdout → aprobación humana.
-## Líneas rojas
-Insertar ≠ enviar · observed ≠ inferred · hash = integridad ≠ verdad · Fuse apagable y nunca
-única muralla · nada sale a un destino externo sin paquete visible y aprobación.
+# Roadmap Muse-Me: Asistencia Contextual Residente
+
+Este documento define las prioridades de desarrollo para la experiencia de asistencia residente y la preparación para el hackathon.
+
+---
+
+## Prioridades y Criterios de Salida
+
+| Hito | Título | Alcance | Criterio de Salida |
+| :--- | :--- | :--- | :--- |
+| **H0** | Referencia y Reglas | Código previo identificado por commit `2f0b3dd`; lectura de reglas oficiales cuando se publiquen; delimitación nítida entre trabajo previo y trabajo del evento. | Base congelada inalterada; reglas oficiales leídas; no asumir elegibilidad sin verificación. |
+| **H1** | Cierres de Autoridad en Demo | Destinos resueltos estrictamente dentro de raíz permitida; fuente borrada en disco excluida de inmediato en MCP; aprobación persistente exacta con consumo atómico; etiqueta visual de Meta en panel honesta. | Pruebas de regresión automatizadas que fallen antes de la corrección y pasen después, sin alterar el uso permitido. |
+| **H2** | Inferencia Meta Real | Contrato de API comprobado con cuenta real; entrada autorizada y respuesta original conservadas con hashes; registro visible de errores; ningún fixture sustituyendo una llamada fallida. | Invocación exitosa demostrable contra endpoint Meta Llama; solicitud y respuesta persistidas en ledger. |
+| **H3** | Asistencia Residente Acotada | Dos aplicaciones autorizadas concretas; actividad agrupada en episodios temporales; contexto con caducidad; invocación rápida y opciones pertinentes generadas por modelo real. | Demostración de ciclo completo en vivo: actividad → episodio → interpretación → invocación → propuesta. Pausa y revocación verificables. |
+| **H4** | Acción Útil Completa | Elección de opción por el usuario, revisión previa, ejecución en destino autorizado y comprobación de resultado; gestión de fuente cambiada, rechazo y recuperación. | Inserción/acción ejecutada y confirmada por readback nativo en aplicación autorizada. |
+| **H5** | Evaluación y Entrega | Tareas nuevas e inéditas; comparación con el mismo modelo y presupuesto sobre contexto reunido manualmente; medición de esfuerzo, tiempo, calidad y coste observados. | Reporte comparativo objetivo sin métricas simuladas (`null` en no observado); paquete reproducible del commit final. |
+
+---
+
+## Líneas Rojas de Arquitectura
+1. **El modelo propone; la aplicación valida y ejecuta.** Ningún contenido de fuente puede ampliar permisos o invocar herramientas.
+2. **Doble compuerta explícita:** `approve_transfer` antes de que los datos salgan hacia el modelo; `approve_insertion` antes de modificar el destino.
+3. **Transparencia epistémica:** Distinción estricta entre observado, inferido y simulado.
+4. **Fuse es contención, no permiso:** Puede degradar o detener una acción riesgosa; nunca autorizar una acción no permitida por política.
+5. **Aislamiento de memoria:** Multiusuario, agentes complejos y auto-mejora son expansiones futuras; no se introducen antes de consolidar el ciclo residente acotado.

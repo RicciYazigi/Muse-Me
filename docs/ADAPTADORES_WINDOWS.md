@@ -1,3 +1,7 @@
+> [!NOTE]
+> **Documento Histórico de Exploración de Adaptadores (21 de octubre de 2026).**  
+> La implementación actual cuenta con controles Win32 `EDIT` de prueba de laboratorio (`src/muse_env/surfaces/`). La integración general mediante UI Automation (UIA) corresponde a fases posteriores. Consultar [docs/STATUS.md](STATUS.md).
+
 # Adaptadores Windows (P1) — contrato de interfaz
 El observador de P0 emite `ObservationEvent` desde superficies simuladas. En Windows se
 implementa la MISMA interfaz sin tocar Context Builder/Invoke/Gate:

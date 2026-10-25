@@ -1,3 +1,7 @@
+> [!NOTE]
+> **Documento Histórico de Visión Estratégica (23 de octubre de 2026).**  
+> Para el estado técnico vigente del corte verificado, consultar [docs/STATUS.md](STATUS.md) y [README.md](../README.md).
+
 # MUSE Environment: evidencia, continuidad y trabajo verificable
 
 23 de octubre de 2026. Dirección propuesta y primera ampliación implementada.

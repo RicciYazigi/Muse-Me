@@ -46,7 +46,7 @@ python experiments/utility_pilot/harness/smoke_test_fixture.py
 ### Modo B: Transporte Asistido Real con Compuertas e Inserción Win32
 Utiliza el contrato de operador asistido (`AntigravityAssistedOperator`), genera `request.json` auditado, espera o importa la respuesta independiente del operador (`response.json`), ejecuta la compuerta 2, inyecta en el control Win32 real y verifica el readback con `WM_GETTEXT`.
 ```bash
-# Exportar las misiones estructuradas para A, B y C (presupuesto idéntico de 1500 chars)
+# Exportar las misiones estructuradas para A, B y C (presupuesto idéntico de 2500 chars)
 python experiments/utility_pilot/harness/run_assisted_experiment.py
 
 # Ejecutar con espera activa del operador en disco
@@ -101,9 +101,9 @@ Esta ejecución se realiza a través de la tubería real completa: empaquetado, 
 
 ---
 
-## 6. Corrida con Operador Independiente (`independent_eval/consolidated_report.json`)
+## 6. Corrida con Propuesta Importada (`independent_eval/consolidated_report.json`)
 
-En esta corrida, el arnés exportó la misión de la Condición B (`msn-8d1f5e202caa`), la cual fue resuelta por Antigravity de manera independiente basándose únicamente en el paquete autorizado (`request.json` y `PROMPT_OPERADOR.md`). La propuesta se importó en modo **estricto** (sin autofill de hashes ni adaptación de misión):
+En esta corrida, el arnés exportó la misión de la Condición B (`msn-8d1f5e202caa`), cuya propuesta fue elaborada e importada en modo estricto (verificando coincidencia exacta de hashes). Esta corrida acredita el transporte estricto, la compuerta de aprobación, la inserción Win32 y el readback nativo; la independencia metodológica de generación de la propuesta no quedó formalmente acreditada. La propuesta se importó en modo **estricto** (sin autofill de hashes ni adaptación de misión):
 
 * **Misión ID:** `msn-8d1f5e202caa`
 * **Hashes Criptográficos Verificados:** `request_hash` y `payload_hash` exactos.
@@ -115,5 +115,3 @@ En esta corrida, el arnés exportó la misión de la Condición B (`msn-8d1f5e20
 * **Consumo Único en SQLite:** `true` (un intento posterior de reejecución fue rechazado con `la misión msn-8d1f5e202caa ya fue consumida previamente`).
 * **Corrección Semántica:** `True` (3/3 pruebas unitarias superadas en sandbox pytest aislado).
 * **Limpieza de Procesos:** Win32TestHost detenido limpiamente mediante `host.stop()` sin dejar ventanas ni procesos huérfanos.
-
-
